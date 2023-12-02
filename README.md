@@ -61,10 +61,12 @@ Please open tickets in the
 ## Authors
 Vehicle Workbench Module Team
  - Lucca. Uzzo <luzzo@abbottanp.com> (Abbottanp Project Manager)
+ 
  Ship Module Team
  - Jose Luis Cercós Pita <jlcercos@gmail.com>
  - Juan Manuel Muñoz-Godin (Vehicle resistance Holtrop and Amadeo tools)
  - Antonio Souto-Iglesias (Advisor of Juan Manuel Muñoz-Godin)
+ 
  Chassis Module Team
  - Daniel Wood <https://github.com/dubstar-04> Chassis Module architet
 
