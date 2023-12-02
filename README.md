@@ -3,7 +3,7 @@ A FreeCAD Workbench supporting the creation of virtual and real ground mobile ve
 
 # FreeCAD Vehicle Workbench
                           
-![Vehicle Workbench Logo](freecad/resources/icons/VehicleWorkbench.svg)
+![Vehicle Workbench Logo](freecad/vehicle/resources/icons/VehicleWorkbench.svg)
 
 **Welcome to FreeCAD-Vehicle!**
 
