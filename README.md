@@ -10,6 +10,8 @@ A FreeCAD Workbench supporting the creation of virtual and real ground mobile ve
 ## Introduction
 FreeCAD-Vehicle is a free module for [FreeCAD](https://www.freecadweb.org) oriented to aid ground mobile vehicle design by providing several tools commonly used in vehicle architecture, performance, function and vehicle useability.
 
+This major version employed the FreeCAD Workbench template found at <https://github.com/FreeCAD/freecad.workbench_starterkit>.
+
 ## Contents
 - [Features](#features)
 - [Install](#install)
@@ -70,3 +72,8 @@ Vehicle Workbench Module Team
  Chassis Module Team
  - Daniel Wood <https://github.com/dubstar-04> Chassis Module architet
 
+ FreeCAD Gear Team
+  - looooo lorenz <https://github.com/looooo/freecad.gears> Owner of repository
+  - Syres916 Recent contributor
+
+ 
