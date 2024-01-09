@@ -1,5 +1,5 @@
 # Vehicle_Module_Freecad
-A FreeCAD Workbench supporting the creation of virtual and real ground mobile vehicles (wheel).
+A FreeCAD Workbench supporting the creation of virtual and real ground mobile vehicles (wheeled).
 
 # FreeCAD Vehicle Workbench
                           
