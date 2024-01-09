@@ -1,0 +1,190 @@
+#***************************************************************************
+#*                                                                         *
+#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*
+#*   Used general GM_Vehicle flow for TaskPanel.y substituting gm_vehicle content     *
+##*   Copyright (c) 2011, 2016 Jose Luis Cercos Pita <jlcercos@gmail.com>   *
+#*                                                                         *
+#*   This program is free software; you can redistribute it and/or modify  *
+#*   it under the terms of the GNU Lesser General Public License (LGPL)    *
+#*   as published by the Free Software Foundation; either version 2 of     *
+#*   the License, or (at your option) any later version.                   *
+#*   for detail see the LICENCE text file.                                 *
+#*                                                                         *
+#*   This program is distributed in the hope that it will be useful,       *
+#*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+#*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+#*   GNU Library General Public License for more details.                  *
+#*                                                                         *
+#*   You should have received a copy of the GNU Library General Public     *
+#*   License along with this program; if not, write to the Free Software   *
+#*   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
+#*   USA                                                                   *
+#*                                                                         *
+#***************************************************************************
+
+import FreeCAD
+import FreeCADGui
+from FreeCAD import Base
+import Part
+from FreeCAD import Units
+
+
+class Preview(object):
+    def __init__(self):
+        """Constructor."""
+        self.baseLine = None
+        self.baseLineLabel = None
+        self.reinit()
+
+    def reinit(self):
+        """Reinitializate drawer, removing all the previous annotations"""
+        self.clean()
+
+    def update(self, L, W, H):
+        """Update the 3D view printing the annotations.
+
+        Keyword arguments:
+        L -- Selected ship length.
+        B -- Selected ship breadth.
+        T -- Selected ship draft.
+        W -- Selected gm_vehicle width
+        H -- Selected gm_vehicle height
+        """
+        self.clean()
+        # Move to the international system units
+        L *= Units.Metre.Value
+        W *= Units.Metre.Value
+        H *= Units.Metre.Value
+        # Draw the base line
+        xStart = -0.6 * L
+        xEnd = 0.6 * L
+        baseLine = Part.makeLine((xStart, 0, 0), (xEnd, 0, 0))
+        Part.show(baseLine)
+        objs = FreeCAD.ActiveDocument.Objects
+        self.baseLine = objs[len(objs) - 1]
+        # self.baseLine.Label = 'BaseLine'
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.baseLine.Name)
+        guiObj.ShowInTree = False
+      #  text = FreeCAD.Qt.translate("gm_create_create","Base line")
+        text = "Base Line"
+        self.baseLineLabel = DrawText('BaseLineText',
+                                      text,
+                                      Base.Vector(xEnd, 0, 0))
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.baseLineLabel.Name)
+        guiObj.ShowInTree = False
+
+        # Draw the free surface line
+        fsLine = Part.makeLine((xStart, 0, H), (xEnd, 0, H))
+        Part.show(fsLine)
+        objs = FreeCAD.ActiveDocument.Objects
+        self.fsLine = objs[len(objs) - 1]
+        # self.fsLine.Label = 'FreeSurface'
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.fsLine.Name)
+        guiObj.ShowInTree = False
+        # text = FreeCAD.Qt.translate("gm_vehicle_create","Free surface")
+        text = "Free Surface"
+        self.fsLineLabel = DrawText('FSText', text, Base.Vector(xEnd, 0, H))
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.fsLineLabel.Name)
+        guiObj.ShowInTree = False
+
+        # Draw the forward perpendicular
+        zStart = -0.1 * H
+        zEnd = 1.1 * H
+        fpLine = Part.makeLine((0.5 * L, 0, zStart), (0.5 * L, 0, zEnd))
+        Part.show(fpLine)
+        objs = FreeCAD.ActiveDocument.Objects
+        self.fpLine = objs[len(objs) - 1]
+        # self.fpLine.Label = 'ForwardPerpendicular'
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.fpLine.Name)
+        guiObj.ShowInTree = False
+        #text = FreeCAD.Qt.translate("gm_vehicle_create","Forward perpendicular")
+        text = "Forward perpendicular"
+        self.fpLineLabel = DrawText('FPText',
+                                    text,
+                                    Base.Vector(0.5 * L, 0, zEnd))
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.fpLineLabel.Name)
+        guiObj.ShowInTree = False
+        # Draw the after perpendicular
+        apLine = Part.makeLine((-0.5 * L, 0, zStart), (-0.5 * L, 0, zEnd))
+        Part.show(apLine)
+        objs = FreeCAD.ActiveDocument.Objects
+        self.apLine = objs[len(objs) - 1]
+        # self.apLine.Label = 'AfterPerpendicular'
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.apLine.Name)
+        guiObj.ShowInTree = False
+        #text = FreeCAD.Qt.translate("ship_create", "After perpendicular")
+        text = "After perpemdicular"
+        self.apLineLabel = DrawText('APText',
+                                    text,
+                                    Base.Vector(-0.5 * L, 0, zEnd))
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.apLineLabel.Name)
+        guiObj.ShowInTree = False
+        # Draw the main frame
+        amLine = Part.makeLine((0, -0.5 * W, zStart), (0, -0.5 * W, zEnd))
+        Part.show(amLine)
+        objs = FreeCAD.ActiveDocument.Objects
+        self.amLine = objs[len(objs) - 1]
+        # self.amLine.Label = 'AminFrame'
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.amLine.Name)
+        guiObj.ShowInTree = False
+        #text = FreeCAD.Qt.translate("gm_vehicle_create","Main frame")
+        #Test Friday
+        text = "Main frame"
+        self.amLineLabel = DrawText('AMText',
+                                    text,
+                                    Base.Vector(0, -0.5 * W, zEnd))
+        guiObj = FreeCADGui.ActiveDocument.getObject(self.amLineLabel.Name)
+        guiObj.ShowInTree = False
+
+    def clean(self):
+        """Remove all previous annotations from screen."""
+        if not self.baseLine:
+            return
+        FreeCAD.ActiveDocument.removeObject(self.baseLine.Name)
+        FreeCAD.ActiveDocument.removeObject(self.baseLineLabel.Name)
+        FreeCAD.ActiveDocument.removeObject(self.fsLine.Name)
+        FreeCAD.ActiveDocument.removeObject(self.fsLineLabel.Name)
+        FreeCAD.ActiveDocument.removeObject(self.fpLine.Name)
+        FreeCAD.ActiveDocument.removeObject(self.fpLineLabel.Name)
+        FreeCAD.ActiveDocument.removeObject(self.apLine.Name)
+        FreeCAD.ActiveDocument.removeObject(self.apLineLabel.Name)
+        FreeCAD.ActiveDocument.removeObject(self.amLine.Name)
+        FreeCAD.ActiveDocument.removeObject(self.amLineLabel.Name)
+
+
+def DrawText(name,
+             string,
+             position,
+             displayMode="Screen",
+             angle=0.0,
+             justification="Left",
+             colour=(0.0, 0.0, 0.0),
+             size=12):
+    """Draw a text in the screen.
+
+    Keyword arguments:
+    name -- Name (label) of the object to generate.
+    string -- Text to draw (it is strongly recommended to use format u'').
+    position -- Point to draw the text.
+    angle -- Counter clockwise rotation of text.
+    justification -- Alignment of the text ("Left", "Right" or "Center").
+    colour -- Colour of the text.
+    size -- Font size (in points pt).
+
+    Returns:
+    A FreeCAD annotation object
+    """
+    # Create the object
+    text = FreeCAD.ActiveDocument.addObject("App::Annotation", name)
+    # Set the text
+    text.LabelText = [string, u'']
+    # Set the options
+    text.Position = position
+    doc = FreeCADGui.ActiveDocument
+    doc.getObject(text.Name).Rotation = angle
+    doc.getObject(text.Name).Justification = justification
+    doc.getObject(text.Name).FontSize = size
+    doc.getObject(text.Name).TextColor = colour
+    doc.getObject(text.Name).DisplayMode = displayMode
+    return FreeCAD.ActiveDocument.getObject(text.Name)
