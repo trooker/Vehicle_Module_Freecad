@@ -1,0 +1,24 @@
+tom@laptop: 
+1> cd ~/.local/share/FreeCAD/Mod/freecad.gm_vehicle/freecad/gm_vehicle/resources$ 
+2> rcc -g python GM_Vehicle.qrc > GM_Vehicle_rc.py
+    creates a resource file
+3> place a copy of the new resource file in the gm_vehicle folder
+
+
+where GM_Vehicle.qrc is documented below (as of 240108_tr)
+<RCC>
+    <qresource>
+        <file>icons/GM_Vehicle_Instance.svg</file>
+        <file>icons/GM_Vehicle_Load.svg</file>
+        <file>icons/GM_Vehicle_LoadExample.svg</file>
+        <file>icons/GM_Vehicle_Logo.svg</file>
+        <file>icons/GM_Vehicle_Module.svg</file>
+        <file>icons/GM_Vehicle_Workbench.svg</file>
+        <file>icons/MainLogo.svg</file>
+        <file>icons/hehjay.svg</file>
+         <file>icons/VehicleWorkbench.svg</file>
+       <file>ui/TaskPanel_gm_vehicleCreateGM_Vehicle.ui</file>
+        <file>ui/TaskPanel_gm_vehicleLoadExample.ui</file>
+    </qresource>
+</RCC>
+
