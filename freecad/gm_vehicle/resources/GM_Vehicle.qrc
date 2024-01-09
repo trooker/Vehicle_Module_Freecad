@@ -1,0 +1,15 @@
+<RCC>
+    <qresource>
+        <file>icons/GM_Vehicle_Instance.svg</file>
+        <file>icons/GM_Vehicle_Load.svg</file>
+        <file>icons/GM_Vehicle_LoadExample.svg</file>
+        <file>icons/GM_Vehicle_DynoChart.svg</file>
+        <file>icons/GM_Vehicle_Logo.svg</file>
+        <file>icons/GM_Vehicle_Module.svg</file>
+        <file>icons/GM_Vehicle_Workbench.svg</file>
+        <file>icons/VehicleWorkbench.svg</file>
+        <file>ui/TaskPanel_gm_vehicleCreateGM_Vehicle.ui</file>
+        <file>ui/TaskPanel_gm_vehicleLoadExample.ui</file>
+        <file>ui/TaskPanel_gm_vehicleDynoChart.ui</file>
+    </qresource>
+</RCC>
