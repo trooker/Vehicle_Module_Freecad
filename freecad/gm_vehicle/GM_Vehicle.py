@@ -1,6 +1,6 @@
 #***************************************************************************
 #*
-#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*   Copyright (c) 2023, 2024 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
 #*   
 #*   Used general Ship flow for GM_Vehicle.py substituting gm_vehicle content     *
 
@@ -39,4 +39,4 @@ from .gm_vehicleCreateGM_Vehicle.Tools import createGM_Vehicle
 App.Console.PrintMessage("GM_Vehicle.py import createGM_Vehicle\n")
 from .gm_vehicleDynoChart.Tools import areas, displacement, wettedArea, moment
 from .gm_vehicleDynoChart.Tools import floatingArea, BMT, mainFrameCoeff
-App.Console.PrintMessage("GM_Vehicle.py import Hydrostatics")
+App.Console.PrintMessage("GM_Vehicle.py import Dyno Chart")

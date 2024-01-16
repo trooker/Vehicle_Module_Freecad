@@ -1,6 +1,6 @@
 #***************************************************************************
 #*                                                                         *
-#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*   Copyright (c) 2023, 2024 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
 #*                                                                         *
 #*   Used general Ship flow for GM_VehicleGui.py substituting gm_vehicle content     *
 #*
@@ -89,7 +89,26 @@ class DynoChart:
     def GetResources(self):
         MenuText = 'Dyno Chart'
         ToolTip =  'Plot the vehicle dyno chart'
+        App.Console.PrintMessage("Accessing Dyno Chart :: TBD ")        
         return {'Pixmap': 'GM_Vehicle_DynoChart',  #corrected Vehicle ommission
+                'MenuText': MenuText,
+                'ToolTip': ToolTip}
+
+
+class WebEVBot:
+    def IsActive(self):
+        return bool(Selection.get_objects()) # for dev only bool(Selection.get_ships())
+
+    def Activated(self):
+        from . import gm_vehicleWebEVBot  #shipHydrostatics
+        gm_vehicleWebEVBot.load()  #shipHydrostatics.load()
+
+    def GetResources(self):
+        MenuText = 'Access Cascadia Motion EVBot App'
+        ToolTip =  'Maximize FC! CloseCombo/Tree Panel to engage EVBot Tool'
+        App.Console.PrintMessage("Rendering Cascadia Motion EVBot Design Tool")  
+        App.Console.PrintMessage(ToolTip)       
+        return {'Pixmap': 'WebEVBot',  
                 'MenuText': MenuText,
                 'ToolTip': ToolTip}
 
@@ -98,5 +117,7 @@ class DynoChart:
 FreeCADGui.addCommand('GM_Vehicle_LoadExample', LoadExample())
 FreeCADGui.addCommand('GM_Vehicle_CreateGM_Vehicle', CreateGM_Vehicle())
 FreeCADGui.addCommand('GM_Vehicle_DynoChart',DynoChart ())
+FreeCADGui.addCommand('GM_Vehicle_WebEVBot',WebEVBot ())
+
 #FreeCADGui.addCommand('Ship_Hydrostatics', Hydrostatics())
 
