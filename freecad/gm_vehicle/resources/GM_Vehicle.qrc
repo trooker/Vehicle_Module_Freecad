@@ -6,10 +6,11 @@
         <file>icons/GM_Vehicle_DynoChart.svg</file>
         <file>icons/GM_Vehicle_Logo.svg</file>
         <file>icons/GM_Vehicle_Module.svg</file>
-        <file>icons/GM_Vehicle_Workbench.svg</file>
         <file>icons/VehicleWorkbench.svg</file>
+        <file>icons/WebEVBot.svg</file>
         <file>ui/TaskPanel_gm_vehicleCreateGM_Vehicle.ui</file>
         <file>ui/TaskPanel_gm_vehicleLoadExample.ui</file>
         <file>ui/TaskPanel_gm_vehicleDynoChart.ui</file>
+        <file>ui/TaskPanel_gm_vehicleEVBot.ui</file>
     </qresource>
 </RCC>
