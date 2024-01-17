@@ -47,7 +47,7 @@ class TaskPanel:
         elif(self.form.gm_vehicle.currentIndex() == 2):   # Hog Jackson Weapons Platoform
             App.open(path + "057_004_999_998_hogJackson_FWD.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 3):   # Tabby
-            App.open(path + "022_998_2seat_tabbyChasis.FCStd")
+            App.open(path + "022_998_2seat_tabbyChassis.FCStd")
         return True
 
     def reject(self):
