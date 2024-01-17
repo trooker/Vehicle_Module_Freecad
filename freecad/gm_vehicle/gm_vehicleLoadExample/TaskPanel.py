@@ -46,7 +46,7 @@ class TaskPanel:
             App.open(path + "057_004_009_999_nomad_stl.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 2):   # Hog Jackson Weapons Platoform
             App.open(path + "057_004_999_998_hogJackson_FWD.FCStd")
-        elif(self.form.gm_vehicle.currentIndex() == 43):   # Tabby
+        elif(self.form.gm_vehicle.currentIndex() == 3):   # Tabby
             App.open(path + "022_998_2seat_tabbyChasis.FCStd")
         return True
 
@@ -77,7 +77,7 @@ class TaskPanel:
 
     def setupUi(self):
         """Setup the task panel user interface."""
-        self.form.gm_vehicle = self.widget(QtGui.QComboBox, "GM_Vehicle")
+        self.form.gm_vehicle = self.widget(QtGui.QComboBox, "GM_VehicleLdExamples")
         self.form.mainLogo = self.widget(QtGui.QLabel, "MainLogo")
         self.form.mainLogo.setPixmap(QtGui.QPixmap(":/icons/GM_Vehicle_Logo.svg"))
         ## 231210_tr disregard self.retranslateUi()
