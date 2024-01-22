@@ -36,7 +36,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>../Icons/Ico.xpm</pixmap>
+          <pixmap>../icons/Ico.xpm</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -66,7 +66,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QComboBox" name="GM_Vehicle">
+           <widget class="QComboBox" name="GM_VehicleLdExamples">
             <item>
              <property name="text">
               <string>Basic Ground Modile Wheeled Vehicle Model</string>
@@ -85,6 +85,36 @@
             <item>
              <property name="text">
               <string>Tabby  Two Seat Model</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Project 999 Placeholder</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Project 998 Placeholder</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Project 997 Placeholder</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Project 996 Placeholder</string>
+             </property>
+            </item>
+           <item>
+             <property name="text">
+              <string>Project 995 Placeholder</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Project 994 Placeholder</string>
              </property>
             </item>
            </widget>
