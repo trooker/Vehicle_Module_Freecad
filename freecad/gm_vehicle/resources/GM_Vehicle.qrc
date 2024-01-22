@@ -8,9 +8,13 @@
         <file>icons/GM_Vehicle_Module.svg</file>
         <file>icons/VehicleWorkbench.svg</file>
         <file>icons/WebEVBot.svg</file>
+        <file>icons/WebAbbott.svg</file>
+        <file>icons/WebMMup.svg</file>
         <file>ui/TaskPanel_gm_vehicleCreateGM_Vehicle.ui</file>
         <file>ui/TaskPanel_gm_vehicleLoadExample.ui</file>
         <file>ui/TaskPanel_gm_vehicleDynoChart.ui</file>
         <file>ui/TaskPanel_gm_vehicleEVBot.ui</file>
+        <file>ui/TaskPanel_gm_vehicleAbbott.ui</file>
+        <file>ui/TaskPanel_gm_vehicleMMup.ui</file>
     </qresource>
 </RCC>
