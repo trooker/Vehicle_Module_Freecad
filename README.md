@@ -77,7 +77,8 @@ Please open tickets in the
 
 ## Authors
 Vehicle Workbench Module Team
- - Lucca. Uzzo <luzzo@abbottanp.com> (Abbottanp Project Manager)
+ - Lucca Uzzo <luzzo@abbottanp.com> (Abbottanp Project Manager)
+ - Quinn Dasher <qed@abbottanp.com> (Senior Software Engineer)
  
  Ship Module Team
  - Jose Luis Cercós Pita <jlcercos@gmail.com>
