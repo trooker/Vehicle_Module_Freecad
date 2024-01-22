@@ -107,10 +107,46 @@ class WebEVBot:
         MenuText = 'Access Cascadia Motion EVBot App'
         ToolTip =  'Maximize FC! CloseCombo/Tree Panel to engage EVBot Tool'
         App.Console.PrintMessage("Rendering Cascadia Motion EVBot Design Tool")  
-        App.Console.PrintMessage(ToolTip)       
+        App.Console.PrintMessage(ToolTip)   
         return {'Pixmap': 'WebEVBot',  
                 'MenuText': MenuText,
                 'ToolTip': ToolTip}
+
+
+class WebAbbott:
+    def IsActive(self):
+        return bool(Selection.get_objects()) # for dev only bool(Selection.get_ships())
+
+    def Activated(self):
+        from . import gm_vehicleWebAbbott  #shipHydrostatics
+        gm_vehicleWebAbbott.load()  #shipHydrostatics.load()
+
+    def GetResources(self):
+        MenuText = 'Access the Abbottanp website'
+        ToolTip =  'Maximize FC! CloseCombo/Tree Panel to render Abbottanp.com'
+        App.Console.PrintMessage("Rendering Abbottanp.com webpage")  
+        App.Console.PrintMessage(ToolTip)       
+        return {'Pixmap': 'WebAbbott',  
+                'MenuText': MenuText,
+                'ToolTip': ToolTip}
+
+class WebMMup:
+    def IsActive(self):
+        return bool(Selection.get_objects()) # for dev only bool(Selection.get_ships())
+
+    def Activated(self):
+        from . import gm_vehicleWebMMup  #shipHydrostatics
+        gm_vehicleWebMMup.load()  #shipHydrostatics.load()
+
+    def GetResources(self):
+        MenuText = 'Access the Motor Matchup website'
+        ToolTip =  'Maximize FC! CloseCombo/Tree Panel to render website.'
+        App.Console.PrintMessage("Rendering MotorMatchup.com webpage")  
+        App.Console.PrintMessage(ToolTip)       
+        return {'Pixmap': 'WebMMup',  
+                'MenuText': MenuText,
+                'ToolTip': ToolTip}
+
 
 
 
@@ -118,6 +154,7 @@ FreeCADGui.addCommand('GM_Vehicle_LoadExample', LoadExample())
 FreeCADGui.addCommand('GM_Vehicle_CreateGM_Vehicle', CreateGM_Vehicle())
 FreeCADGui.addCommand('GM_Vehicle_DynoChart',DynoChart ())
 FreeCADGui.addCommand('GM_Vehicle_WebEVBot',WebEVBot ())
-
+FreeCADGui.addCommand('GM_Vehicle_WebAbbott',WebAbbott ())
+FreeCADGui.addCommand('GM_Vehicle_WebMMup',WebMMup ())
 #FreeCADGui.addCommand('Ship_Hydrostatics', Hydrostatics())
 

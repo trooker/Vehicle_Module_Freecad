@@ -37,7 +37,9 @@ class GM_VehicleWorkbench(Gui.Workbench):
         gm_vehiclelist = ["GM_Vehicle_LoadExample",
                            "GM_Vehicle_CreateGM_Vehicle",
                            "GM_Vehicle_DynoChart",
-                           "GM_Vehicle_WebEVBot"]
+                           "GM_Vehicle_WebEVBot",
+                           "GM_Vehicle_WebAbbott",
+                           "GM_Vehicle_WebMMup"]
         App.Console.PrintMessage("init_gui.py: Toolbar gm_vehilcelist \n")
                            
 
