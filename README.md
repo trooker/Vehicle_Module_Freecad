@@ -34,13 +34,13 @@ It currently offers the following tools:
 
 5> Supports the rendering of EV GM_vehilces within the FreeCAD environment.
 
-6> Facilitates the "feedback loop" between FreeCAD rendered EV designs, EV component desgin/modifications, visualiztion of performance under various surface and weather condiitons.
+6> Facilitates the "feedback loop" between FreeCAD rendered EV designs, EV component desgin/modifications, visualiztion of performance under various surfaces and weather condiitons.
 
 TBD
 
 ## Install
 
-This workbench/module is currently only available as a public GITHUB repositoty under trooker.  It is not ready for general usage.  But it can deliver a perception of "how an EV design might look and behave."   Please contact the author for assistance or with helpful commnets.
+This workbench/module is currently only available as a public GITHUB repositoty under trooker.  It is not ready for general usage.  But it can deliver a perception of "EV design rendering and potential behave/performance."   Please contact the author for assistance or with helpful commnets.
 
 This workbench will eventually be available for download via the FreeCAD [Addon Manager].  It will also be available for manual downloading to the designer's Mod folder in the disigner's local FreeCAD environment.  See https://www.youtube.com/watch?v=NXN7TOg3kj4  or/and https://www.youtube.com/watch?v=cYevV8zy5sM  for instructional videos on FreeCAD installation and installing workbenches.
 
