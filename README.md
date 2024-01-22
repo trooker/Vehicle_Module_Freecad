@@ -25,11 +25,15 @@ This major version employed the FreeCAD Workbench template found at <https://git
 ## Features
 It currently offers the following tools:
 
-1> Create a virtual land based vehicle suitable support rendering in an actual assembly format.\n
-2> Links to Cascadia Motion EVBot allowing the creation of dynocharts for electric vehicle desing.\n
+1> Create a virtual land based vehicle suitable support rendering in an actual assembly format.
+
+2> Links to Cascadia Motion EVBot allowing the creation of dynocharts for electric vehicle desing.
+
 3> Links to Abbottanp.com where the discussion/analysis is presented for GM vehicles suitable for weapons system platform missions
 4> Links to MotorMatchup.com to allow visualization of EV and ICE vehicle performance as sepcified by a desginer.
+
 5> Supports the rendering of EV GM_vehilces within the FreeCAD environment.
+
 6> Facilitates the "feedback loop" between FreeCAD rendered EV designs, EV component desgin/modifications, visualiztion of performance under various surface and weather condiitons.
 
 TBD
