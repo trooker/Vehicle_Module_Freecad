@@ -1,14 +1,14 @@
-# Vehicle_Module_Freecad
+# GM_Vehicle_Module for Freecad
 A FreeCAD Workbench supporting the creation of virtual and real ground mobile vehicles (wheeled).
 
-# FreeCAD Vehicle Workbench
+# FreeCAD GM Vehicle Workbench
                           
 ![Vehicle Workbench Logo](freecad/gm_vehicle/resources/icons/VehicleWorkbench.svg)
 
-**Welcome to FreeCAD-Vehicle!**
+**Welcome to FreeCAD GM_Vehicle!**
 
 ## Introduction
-Vehicle_Module_FreeCAD is an Opensource module for [FreeCAD](https://www.freecadweb.org). The module/workbench supports ground mobile vehicle design by providing several tools commonly used in vehicle architecture, performance, function and vehicle useability.
+GM_Vehicle ModuleFreeCAD is an Opensource workbench for [FreeCAD](https://www.freecadweb.org). The module/workbench supports ground mobile vehicle design by providing several tools commonly used in vehicle architecture, performance, function and vehicle useability.
 
 This major version employed the FreeCAD Workbench template found at <https://github.com/FreeCAD/freecad.workbench_starterkit>.
 
