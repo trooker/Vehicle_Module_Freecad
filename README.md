@@ -8,7 +8,7 @@ A FreeCAD Workbench supporting the creation of virtual and real ground mobile ve
 **Welcome to FreeCAD-Vehicle!**
 
 ## Introduction
-FreeCAD-Vehicle is a free module for [FreeCAD](https://www.freecadweb.org) oriented to aid ground mobile vehicle design by providing several tools commonly used in vehicle architecture, performance, function and vehicle useability.
+Vehicle_Module_FreeCAD is an Opensource module for [FreeCAD](https://www.freecadweb.org). The module/workbench supports ground mobile vehicle design by providing several tools commonly used in vehicle architecture, performance, function and vehicle useability.
 
 This major version employed the FreeCAD Workbench template found at <https://github.com/FreeCAD/freecad.workbench_starterkit>.
 
@@ -26,12 +26,19 @@ This major version employed the FreeCAD Workbench template found at <https://git
 It currently offers the following tools:
 
 1> Create a virtual land based vehicle suitable to engage in 
+2> Links to Cascadia Motion EVBot allowing the creation of dynocharts for electric vehicle desing
+3> Links to Abbottanp.com where the discussion/analysis is presented for GM vehicles suitable for weapons system platform missions
+4> Links to MotorMatchup.com to allow visualization of EV and ICE vehicle performance as sepcified by a desginer.
+5> Supports the rendering of EV GM_vehilces within the FreeCAD environment.
+6> Facilitates the "feedback loop" between FreeCAD rendered EV designs, EV component desgin/modifications, visualiztion of performance under various surface and weather condiitons.
 
 TBD
 
 ## Install
 
-This workbench is available for download via the FreeCAD [Addon Manager] TBD 
+This workbench/module is currently only available as in a private GITHUB repositoty.
+
+This workbench will eventually be available for download via the FreeCAD [Addon Manager].  It will also be available for manual downloading to the designer's Mod folder in the disigner's local FreeCAD environment.  See https://www.youtube.com/watch?v=NXN7TOg3kj4  or/and https://www.youtube.com/watch?v=cYevV8zy5sM  for instructional videos on FreeCAD installation and installing workbenches.
 
 ## Usage
 
@@ -40,6 +47,8 @@ Documentation for this workbench is available on the [Vehicle Workbench wiki pag
 ## Tutorials
 
 * Official Vehicle Workbench Tutorial TBD
+* Four "useful" examples are provided to allow a rapid movement down the learning curve.
+* Six "quickstart" project templates are provided to aid the designer in overcoming the initial learning inertia.
 
 ## Roadmap
 
@@ -47,7 +56,9 @@ There are many tools and features which will be implemented in this module:
 
  - Wiki documentation
  - Tutorials
- - Vehicle resistance
+ - Vehicle desgin
+ - Vehicle rolling resistance
+ - Vehicle performance curves/plots
  - TBD
 
 ## Discussion/Feedback
