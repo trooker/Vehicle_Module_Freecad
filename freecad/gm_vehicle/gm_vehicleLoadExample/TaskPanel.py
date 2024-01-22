@@ -45,9 +45,21 @@ class TaskPanel:
         elif(self.form.gm_vehicle.currentIndex() == 1):   # Areil Nomad
             App.open(path + "057_004_009_999_nomad_stl.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 2):   # Hog Jackson Weapons Platoform
-            App.open(path + "057_004_999_998_hogJackson_FWD.FCStd")
+            App.open(path + "057_004_999_998_hogJackson_AWD.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 3):   # Tabby
             App.open(path + "022_998_2seat_tabbyChassis.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 4):   # Tabby
+            App.open(path + "000_999_quickstart.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 5):   # Tabby
+            App.open(path + "000_998_quickstart.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 6):   # Tabby
+            App.open(path + "000_997_quickstart.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 7):   # Tabby
+            App.open(path + "000_996_quickstart.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 8):   # Tabby
+            App.open(path + "000_995_quickstart.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 9):   # Tabby
+            App.open(path + "000_994_quickstart.FCStd")
         return True
 
     def reject(self):
