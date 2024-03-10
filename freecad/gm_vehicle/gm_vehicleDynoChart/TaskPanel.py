@@ -1,6 +1,6 @@
 #***************************************************************************
-#*
-#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*   
+#*   Copyright (c) 2023...2024 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
 #*   
 #*   Used general Ship flow for Task.py substituting gm_vehicle content     *
 #*                                                                         *
@@ -31,7 +31,15 @@ from FreeCAD import Base, Vector
 import Part
 from FreeCAD import Units
 from PySide import QtGui, QtCore
-from . import PlotAux
+from . import PlotAux_01_fntDyno
+from . import PlotAux_02_rrDyno
+from . import PlotAux_03_axlTrq
+from . import PlotAux_04_vehForces
+from . import PlotAux_05_whlPwr
+from . import PlotAux_06_accTrc
+from . import PlotAux_07_fntBat
+from . import PlotAux_08_rrBat
+
 from . import Tools
 from .. import Instance
 from .. import GM_Vehicle_rc  # replaces Ship_rc
@@ -47,71 +55,318 @@ class TaskPanel:
         self.form = Gui.PySideUic.loadUi(self.ui)
         self.gm_vehicle = None    # was ship
         self.running = False
+        # zero based list of charts/plots/graphs
+        self.menuList = ["fntDyno", "rrDyno", "axlTrq", "vehFrc", "whlPwr", "accTrc", "fntBat", "rrBat"]
 
     def accept(self):
         if not self.gm_vehicle:     # was ship
             return False
         if self.running:
             return
-        self.form.group_pbar.show()
+        #self.form.group_pbar.show()
         self.save()
+		##********
+        n_minimum = 2 #DEV 240209 start with the third row or nbr 2 (0,1,2: thr third row
+        n_draft = self.form.spinbx_Rows.value() + 1 #DEV 240209 skip the first two rows of each spreadsheet
+		
+        if (self.form.chkbx_FntMotorDyno.isChecked() == True): 
+            #PlotAux_01_fntDyno
+            menuId0 = self.menuList[0]  #fntDyno
+            msg = "Fire Front Motor Dyno Chart Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.doDynoCharts(menuId0, n_draft, n_minimum)
+        if (self.form.chkbx_RrMotorDyno.isChecked() == True):
+            #PlotAux_02_rrDyno
+            menuId1 = self.menuList[1]  #rrDyno
+            msg = "Fire Rear Motor Dyno Chart Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.doDynoCharts(menuId1, n_draft, n_minimum)
+        if (self.form.chkbx_AxleTorque.isChecked() ==True):
+            menuId2 = self.menuList[2]  #"axlTrq"
+            msg = "Fire Axle Torque Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.doAxleTorqueChart(menuId2, n_draft, n_minimum) 
+        if (self.form.chkbx_VehForces.isChecked() ==True):
+            menuId3 = self.menuList[3]  #"vehFrc"
+            msg = "Fire Vehicle Forces and Drag Force Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.doVehForcesChart(menuId3, n_draft, n_minimum) 
+        if (self.form.chkbx_WheelPwr.isChecked() ==True):
+            menuId4 = self.menuList[4]  #"whlPwr"
+            msg = "Fire Wheel Power - Battery Limit Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.doWheelPwrChart(menuId4, n_draft, n_minimum) 
+        if (self.form.chkbx_AccelTraction.isChecked() ==True):
+            menuId5 = self.menuList[5]  #"accTrc"
+            msg = "Fire Acceleration and Traction Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.doAccelTractionChart(menuId5, n_draft, n_minimum) 
+        if (self.form.chkbx_FnBatteryCapa.isChecked() == True):
+            menuId6 = self.menuList[6]  #"fntBat"
+            msg = "Fire Front Battery Capbility Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.dofntBatChart(menuId6, n_draft, n_minimum) 
+        if (self.form.chkbx_RrBatteryCapa.isChecked() ==True):
+            menuId7 = self.menuList[7]  #"rrBat"
+            msg = "Fire Rear Battery Capbility Plot"
+            App.Console.PrintMessage(msg + '\n')
+            self.dorrBatChart(menuId7, n_draft, n_minimum) 
+                       
+        return True
+     
 
-        trim = Units.parseQuantity(Locale.fromString(self.form.trim.text()))
-        min_draft = Units.parseQuantity(Locale.fromString(self.form.min_draft.text()))
-        max_draft = Units.parseQuantity(Locale.fromString(self.form.max_draft.text()))
-        n_draft = self.form.n_draft.value()
-        self.form.pbar.setMinimum(0)
-        self.form.pbar.setMaximum(n_draft)
-        self.form.pbar.setValue(0)
 
-        draft = min_draft
-        drafts = [draft]
-        dDraft = (max_draft - min_draft) / (n_draft - 1)
-        for i in range(1, n_draft):
-            draft = draft + dDraft
-            drafts.append(draft)
-
-        # Get external faces
-        self.loop = QtCore.QEventLoop()
-        self.timer = QtCore.QTimer()
-        self.timer.setSingleShot(True)
-        QtCore.QObject.connect(self.timer,
-                               QtCore.SIGNAL("timeout()"),
-                               self.loop,
-                               QtCore.SLOT("quit()"))
-        self.running = True
-        faces = self.externalFaces(self.gm_vehicle.Shape)   # was ship
-        if not self.running:
-            return False
-        if len(faces) == 0:
-            msg = "Failure detecting external faces from the object"
-            App.Console.PrintError(msg + '\n')
-            return False
-        faces = Part.makeShell(faces)
-
-        # Get the hydrostatics
-        msg = "Computing dyno chart"
+        
+		##********        
+        """ may not need
+        """
+    def  doDynoCharts(self, menuId_in, n_draft, n_minimum):       
+        """
+        Dyno Charts have torque and power as function of rpm
+        x-axis as RPM
+        y-axis as torque and power
+        process handles three columns
+        As long as Front and Rear DynoCharts have same Y -axis Torque * Power
+            The X-Axis must remain RPM.  Otherwise a new category of chart/plot
+            will need to be generated
+        """
+        msg = "Dev: Accept Creating dyno chart plot"
         App.Console.PrintMessage(msg + '...\n')
         points = []
         plt = None
-        for i in range(len(drafts)):
-            App.Console.PrintMessage("\t{} / {}\n".format(i + 1, len(drafts)))
-            self.form.pbar.setValue(i + 1)
-            draft = drafts[i]
-            point = Tools.Point(self.gm_vehicle,
-                                faces,
-                                draft,
-                                trim)
+        # Process for Dyno Charts Front & Rear Motors       
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_dyno(self.gm_vehicle, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
             points.append(point)
-            if plt is None:
-                plt = PlotAux.Plot(self.gm_vehicle, points)
-            else:
-                plt.update(self.gm_vehicle, points)
-            self.timer.start(0.0)
-            self.loop.exec_()
-            if(not self.running):
-                break
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "fntDyno":
+                msg = "Graph Front Dyno."
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_01_fntDyno.Plot(self.gm_vehicle, points)
+            if menuId_in == "rrDyno":                   
+                msg = "Graph Rear Dyno."
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_02_rrDyno.Plot(self.gm_vehicle, points)               
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle)  #240207  , points)
+           
         return True
+
+
+        
+    def doAxleTorqueChart(self, menuId_in, n_draft, n_minimum): 
+        """
+        FWD, RWD, AWD Axle Torque and RPM are displayed as a function of Ground Speed
+            for the given designed vehicle (weight, drag, and propulsion) assuming flat hard surface.
+        """
+        msg = "Dev: Accept Creating Axle Torque & Speed plot"
+        App.Console.PrintMessage(msg + '...\n')
+        points = []
+        plt = None
+        # Process for Dyno Charts Front & Rear Motors       
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_axlTrq(self.gm_vehicle, 0, 0, 0, 0, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
+            points.append(point)
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "axlTrq":
+                msg = "Graph Axle Torque & Speed of Vehicle"
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_03_axlTrq.Plot(self.gm_vehicle, points)
+               
+            """    
+            ##Hold for another six column plot
+            if menuId_in == "rrDyno":                   
+                msg = "Graph Rear Dyno."
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_02_rrDyno.Plot(self.gm_vehicle, points)      
+            """             
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle)  #240207  , points)
+
+        return True
+
+    def doVehForcesChart(self, menuId_in, n_draft, n_minimum):
+        """
+        FWD, RWD, AWD Axle Torque and RPM are displayed as a function of Ground Speed
+            for the given designed vehicle (weight, drag, and propulsion) assuming flat hard surface.
+        """
+        msg = "Dev: Accept Creating vehicle force plot"
+        App.Console.PrintMessage(msg + '...\n')
+        points = []
+        plt = None
+        # Process for Dyno Charts Front & Rear Motors       
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_vehFrc(self.gm_vehicle, 0, 0, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
+            points.append(point)
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "vehFrc":
+                msg = "Graph Forces Acting on Vehicle"
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_04_vehForces.Plot(self.gm_vehicle, points)
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle)  #240207  , points)
+
+        return True
+
+ 
+ 
+    def doWheelPwrChart(self, menuId_in, n_draft, n_minimum):
+        """
+        FWD, RWD, AWD Axle Torque and RPM are displayed as a function of Ground Speed
+            for the given designed vehicle (weight, drag, and propulsion) assuming flat hard surface.
+        """
+        msg = "Dev: Accept Creating Axle Torque & Speed plot"
+        App.Console.PrintMessage(msg + '...\n')
+        points = []
+        plt = None
+        # Process for Dyno Charts Front & Rear Motors       
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_whlPwr(self.gm_vehicle, 0, 0, 0, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
+            points.append(point)
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "whlPwr":
+                msg = "Graph Axle Torque & Speed of Vehicle"
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_05_whlPwr.Plot(self.gm_vehicle, points)
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle)  #240207  , points)
+
+        return True
+
+ 
+    def doAccelTractionChart(self, menuId_in, n_draft, n_minimum):
+        """
+        FWD, RWD, AWD Acceleration and Traction are displayed as a function of Ground Speed
+            for the given designed vehicle (weight, drag, and propulsion) assuming flat hard surface.
+        """
+        msg = "Dev: Accept Creating Acceleration and Traction plot"
+        App.Console.PrintMessage(msg + '...\n')
+        points = []
+        plt = None
+        # Process for Acceleration & Traction       
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_accTrc(self.gm_vehicle, 0, 0, 0, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
+            points.append(point)
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "accTrc":
+                msg = "Graph Acceleration & Traction of Vehicle"
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_06_accTrc.Plot(self.gm_vehicle, points)
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle, points)
+
+        return True
+ 
+ 
+    def dofntBatChart(self, menuId_in, n_draft, n_minimum):
+        msg = "Dev: Accept Creating Front Battery Capability plot"
+        App.Console.PrintMessage(msg + '...\n')
+        points = []
+        plt = None
+        # Process for  Front Battery Capability      
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_batCap(self.gm_vehicle, 0, 0, 0, 0, 0, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
+            points.append(point)
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "fntBat":
+                msg = "Graph Front Battery Capability "
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_07_fntBat.Plot(self.gm_vehicle, points)
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle)  #240207  , points)
+
+        return True
+
+ 
+    def dorrBatChart(self, menuId_in, n_draft, n_minimum):
+        msg = "Dev: Accept Creating Front Battery Capability plot"
+        App.Console.PrintMessage(msg + '...\n')
+        points = []
+        plt = None
+        # Process for  Front Battery Capability      
+        for i in range(n_draft):   #len(drafts)):
+            # 240208   self.form.pbar.setValue(i + 1)
+            point = Tools.Point_batCap(self.gm_vehicle, 0, 0, 0, 0, 0, 0, 0, 0) #DEV 240209  added 0,'s  and don't need:   ,
+            points.append(point)
+         
+         #240207 reshuffled from above  trying to drive plot   
+        if plt is None:
+            msg = "Dev: plt = None."
+            App.Console.PrintMessage(msg + '...\n')
+            # DEV 240213   _01_fntMotorDyno
+            msg = "menuId_in: " +  menuId_in
+            App.Console.PrintMessage(msg + '...\n')
+            if menuId_in == "rrBat":
+                msg = "Graph Rear Battery Capability "
+                App.Console.PrintMessage(msg + '...\n')
+                plt = PlotAux_08_rrBat.Plot(self.gm_vehicle, points)
+        else:
+            msg = "Dev: plt is active."
+            App.Console.PrintMessage(msg + '...\n')
+            plt.update(self.gm_vehicle)  #240207  , points)
+
+        return True 
+
 
     def reject(self):
         if not self.gm_vehicle:   # was ship
@@ -143,25 +398,61 @@ class TaskPanel:
         pass
 
     def setupUi(self):
-        self.form.trim = self.widget(QtGui.QLineEdit, "trim")
-        self.form.min_draft = self.widget(QtGui.QLineEdit, "min_draft")
-        self.form.max_draft = self.widget(QtGui.QLineEdit, "max_draft")
-        self.form.n_draft = self.widget(QtGui.QSpinBox, "n_draft")
-        self.form.pbar = self.widget(QtGui.QProgressBar, "pbar")
-        self.form.group_pbar = self.widget(QtGui.QGroupBox, "group_pbar")
+        self.form.chkbx_FntMotorDyno = self.widget(QtGui.QCheckBox, "chkbx_FntMotorDyno")		
+        if (self.form.chkbx_FntMotorDyno.isChecked() == True): 
+            msg = "setupUi: Fire Front Motor Dyno Chart Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_RrMotorDyno = self.widget(QtGui.QCheckBox, "chkbx_RrMotorDyno")		
+        if (self.form.chkbx_RrMotorDyno.isChecked() == True): 
+            msg = "setupUi: Fire Rear Motor Dyno Chart Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_FnBatteryCapa = self.widget(QtGui.QCheckBox, "chkbx_FnBatteryCapa")		
+        if (self.form.chkbx_FnBatteryCapa.isChecked() == True): 
+            msg = "setupUi: Fire Front Battery Capability Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_RrBatteryCapa = self.widget(QtGui.QCheckBox, "chkbx_RrBatteryCapa")		
+        if (self.form.chkbx_RrBatteryCapa.isChecked() == True): 
+            msg = "setupUi: Fire Rear Battery Capability Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_AccelTraction = self.widget(QtGui.QCheckBox, "chkbx_AccelTraction")		
+        if (self.form.chkbx_AccelTraction.isChecked() == True): 
+            msg = "setupUi: Fire Acceleration - Traction Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_AxleTorque = self.widget(QtGui.QCheckBox, "chkbx_AxleTorque")		
+        if (self.form.chkbx_AxleTorque.isChecked() == True): 
+            msg = "setupUi: Fire Axle Torque Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_VehForces = self.widget(QtGui.QCheckBox, "chkbx_VehForces")	
+        if (self.form.chkbx_VehForces.isChecked() == True): 
+            msg = "setupUi: Fire Vehicle Forces Plot"
+            App.Console.PrintMessage(msg + '\n')
+        self.form.chkbx_WheelPwr = self.widget(QtGui.QCheckBox, "chkbx_WheelPwr")	
+        if (self.form.chkbx_WheelPwr.isChecked() == True): 
+            msg = "setupUi: Fire Wheel Power Plot"
+            App.Console.PrintMessage(msg + '\n')
+        
+
+        msg = "Dev: just prior to self.initValues function call"
+        App.Console.PrintMessage(msg + '\n')
+
         # Initial values
         if self.initValues():
             return True
+        msg = "Dev: just above QtCore.QObject.connect"
+        App.Console.PrintMessage(msg + '\n')
+
         # Connect Signals and Slots
-        QtCore.QObject.connect(self.form.trim,
+        QtCore.QObject.connect(self.form.chkbx_FntMotorDyno,
                                QtCore.SIGNAL("valueChanged(const Base::Quantity&)"),
                                self.onData)
-        QtCore.QObject.connect(self.form.min_draft,
+        msg = "Dev:  Just after connect for Front Motor Dyno"
+        App.Console.PrintMessage(msg + '\n')
+
+        QtCore.QObject.connect(self.form.chkbx_RrMotorDyno,
                                QtCore.SIGNAL("valueChanged(const Base::Quantity&)"),
                                self.onData)
-        QtCore.QObject.connect(self.form.max_draft,
-                               QtCore.SIGNAL("valueChanged(const Base::Quantity&)"),
-                               self.onData)
+        msg = "Dev: Just after connect for Rear Motor Dyno"
+        App.Console.PrintMessage(msg + '\n')
 
     def getMainWindow(self):
         toplevel = QtGui.QApplication.topLevelWidgets()
@@ -185,225 +476,35 @@ class TaskPanel:
         """ Set initial values for fields
             ship or gm_vehicle are instances of objects
         """
+        msg = "Dev: initValues"
+        App.Console.PrintMessage(msg + '\n')
+ 
         sel_objects = Selection.get_objects()    # was ship plural
         if not sel_objects:
             msg = "A object instance must be selected before using this tool"
             App.Console.PrintError(msg + '\n')
             return True
         self.gm_vehicle = sel_objects[0]
+        msg = "Dev: self.gm_vehicle = sel_objects[0]"
+        App.Console.PrintMessage(msg + '\n')
         if len(sel_objects) > 1:
             msg = "More than one object have been selected (just the one labelled '{}' is considered)".format(self.gm_vehicle.Label)
             App.Console.PrintWarning(msg + '\n')
-
-        props = self.gm_vehicle.PropertiesList
-
-        try:
-            props.index("HydrostaticsTrim")
-            self.form.trim.setText(self.gm_vehicle.HydrostaticsTrim.UserString)
-        except ValueError:
-            self.form.trim.setText("0 deg")
-
-        try:
-            props.index("HydrostaticsMinDraft")
-            self.form.min_draft.setText(
-                self.gm_vehicle.HydrostaticsMinDraft.UserString)
-        except ValueError:
-            self.form.min_draft.setText(
-                (0.9 * self.gm_vehicle.Height).UserString)   # sub Height
-        try:
-            props.index("HydrostaticsMaxDraft")
-            self.form.max_draft.setText(
-                self.gm_vehicle.HydrostaticsMaxDraft.UserString)
-        except ValueError:
-            self.form.max_draft.setText(
-                (1.1 * self.gm_vehicle.Height).UserString)
-
-        try:
-            props.index("HydrostaticsNDraft")
-            self.form.n_draft.setValue(self.gm_vehicle.HydrostaticsNDraft)
-        except ValueError:
-            pass
-
-        self.form.group_pbar.hide()
         return False
 
     def clampValue(self, widget, val_min, val_max, val):
-        if val_min <= val <= val_max:
-            return val
-        val = min(val_max, max(val_min, val))
-        widget.setText(val.UserString)
-        return val
+        pass
 
     def onData(self, value):
-        """ Method called when input data is changed.
-         @param value Changed value.
-        """
-        min_draft = Units.parseQuantity(Locale.fromString(
-            self.form.min_draft.text()))
-        max_draft = Units.parseQuantity(Locale.fromString(
-            self.form.max_draft.text()))
-        trim = Units.parseQuantity(Locale.fromString(self.form.trim.text()))
-        if min_draft.Unit != Units.Length or \
-            max_draft.Unit != Units.Length or \
-            trim.Unit != Units.Angle:
-            return
-
-        # Clamp the values to the bounds
-        bbox = self.gm_vehicle.Shape.BoundBox
-        draft_min = Units.Quantity(bbox.ZMin, Units.Length)
-        draft_max = Units.Quantity(bbox.ZMax, Units.Length)
-        min_draft = self.clampValue(
-            self.form.min_draft, draft_min, draft_max, min_draft)
-        max_draft = self.clampValue(
-            self.form.max_draft, draft_min, draft_max, max_draft)
-        # Check that the minimum value is lower than
-        # the maximum one
-        min_draft = self.clampValue(self.form.min_draft,
-                                    draft_min,
-                                    max_draft,
-                                    min_draft)
-
-        # Clamp the trim angle to sensible values
-        trim = self.clampValue(self.form.trim,
-                               Units.parseQuantity("-90 deg"),
-                               Units.parseQuantity("90 deg"),
-                               trim)
-
+        pass
+                
     def save(self):
-        """ Saves data into object instance.
-        """
-        trim = Units.Quantity(self.form.trim.text())
-        min_draft = Units.Quantity(self.form.min_draft.text())
-        max_draft = Units.Quantity(self.form.max_draft.text())
-        n_draft = self.form.n_draft.value()
-
-        props = self.gm_vehicle.PropertiesList
-        try:
-            props.index("HydrostaticsTrim")
-        except ValueError:
-            tooltip = "Hydrostatics tool selected trim angle"
-            self.gm_vehicle.addProperty("App::PropertyAngle",
-                                  "HydrostaticsTrim",
-                                  "Ship",
-                                  tooltip)
-        self.gm_vehicle.HydrostaticsTrim = trim
-
-        try:
-            props.index("HydrostaticsMinDraft")
-        except ValueError:
-            tooltip = "Hydrostatics tool selected minimum draft"
-            self.gm_vehicle.addProperty("App::PropertyLength",
-                                  "HydrostaticsMinDraft",
-                                  "Ship",
-                                  tooltip)
-        self.gm_vehicle.HydrostaticsMinDraft = min_draft
-
-        try:
-            props.index("HydrostaticsMaxDraft")
-        except ValueError:
-            tooltip = "Hydrostatics tool selected maximum draft"
-            self.gm_vehicle.addProperty("App::PropertyLength",
-                                  "HydrostaticsMaxDraft",
-                                  "Ship",
-                                  tooltip)
-        self.gm_vehicle.HydrostaticsMaxDraft = max_draft
-
-        try:
-            props.index("HydrostaticsNDraft")
-        except ValueError:
-            tooltip = "Hydrostatics tool number of points selected"
-            self.gm_vehicle.addProperty("App::PropertyInteger",
-                                  "HydrostaticsNDraft",
-                                  "Ship",
-                                  tooltip)
-        self.gm_vehicle.HydrostaticsNDraft = self.form.n_draft.value()
-
+        pass
+                
     def lineFaceSection(self, line, surface):
-        """ Returns the point of section of a line with a face
-        @param line Line object, that can be a curve.
-        @param surface Surface object (must be a Part::Shape)
-        @return Section points array, [] if line don't cut surface
-        """
-        result = []
-        vertices = line.Vertexes
-        nVertex = len(vertices)
-
-        section = line.cut(surface)
-
-        points = section.Vertexes
-        return points
-
+        pass
     def externalFaces(self, shape):
-        """ Returns detected external faces.
-        @param shape Shape where external faces wanted.
-        @return List of external faces detected.
-        """
-        result = []
-        faces = shape.Faces
-        bbox = shape.BoundBox
-        L = bbox.XMax - bbox.XMin
-        B = bbox.YMax - bbox.YMin
-        T = bbox.ZMax - bbox.ZMin
-        dist = math.sqrt(L*L + B*B + T*T)
-        msg = "Computing external faces"
-        App.Console.PrintMessage(msg + '...\n')
-        # Valid/invalid faces detection loop
-        for i in range(len(faces)):
-            App.Console.PrintMessage("\t{} / {}\n".format(i + 1, len(faces)))
-            f = faces[i]
-            # Create a line normal to surface at middle point
-            u = 0.0
-            v = 0.0
-            try:
-                surf = f.Surface
-                u = 0.5*(surf.getUKnots()[0]+surf.getUKnots()[-1])
-                v = 0.5*(surf.getVKnots()[0]+surf.getVKnots()[-1])
-            except:
-                cog = f.CenterOfMass
-                [u, v] = f.Surface.parameter(cog)
-            p0 = f.valueAt(u, v)
-            try:
-                n = f.normalAt(u, v).normalize()
-            except:
-                continue
-            p1 = p0 + n.multiply(1.5 * dist)
-            line = Part.makeLine(p0, p1)
-            # Look for faces in front of this
-            nPoints = 0
-            for j in range(len(faces)):
-                f2 = faces[j]
-                section = self.lineFaceSection(line, f2)
-                if len(section) <= 2:
-                    continue
-                # Add points discarding start and end
-                nPoints = nPoints + len(section) - 2
-            # In order to avoid special directions we can modify line
-            # normal a little bit.
-            angle = 5
-            line.rotate(p0, Vector(1, 0, 0), angle)
-            line.rotate(p0, Vector(0, 1, 0), angle)
-            line.rotate(p0, Vector(0, 0, 1), angle)
-            nPoints2 = 0
-            for j in range(len(faces)):
-                if i == j:
-                    continue
-                f2 = faces[j]
-                section = self.lineFaceSection(line, f2)
-                if len(section) <= 2:
-                    continue
-                # Add points discarding start and end
-                nPoints2 = nPoints + len(section) - 2
-            # If the number of intersection points is pair, is a
-            # external face. So if we found an odd points intersection,
-            # face must be discarded.
-            if (nPoints % 2) or (nPoints2 % 2):
-                continue
-            result.append(f)
-            self.timer.start(0.0)
-            self.loop.exec_()
-            if(not self.running):
-                break
-        return result
+        pass
 
 
 def createTask():

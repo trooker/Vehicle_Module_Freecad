@@ -24,7 +24,11 @@
 #*   USA                                                                   *
 #*                                                                         *
 #***************************************************************************
-
+"""
+240220_tr  For readbility the various Point_* classes do not seek to consolidate common
+               placement order of the incoming data.  
+            A future tweak could be made to accomplish this minor task.  
+"""
 import math
 import random
 from FreeCAD import Vector, Rotation, Matrix, Placement
@@ -43,548 +47,123 @@ DENS = Units.parseQuantity("1025 kg/m^3")  # Salt water
 COMMON_BOOLEAN_ITERATIONS = 10
 
 
-def placeShipShape(shape, draft, roll, trim):
-    """Move the ship shape such that the free surface matches with the plane
-    z=0. The transformation will be applied on the input shape, so copy it
-    before calling this method if it should be preserved.
 
-    Position arguments:
-    shape -- Ship shape
-    draft -- Ship draft
-    roll -- Roll angle
-    trim -- Trim angle
+class Point_dyno:
+    def __init__(self, gm_vehicle, rpm, torque, pwr):
+        # Create data storage bin
+        self.rpm      = rpm
+        self.torque    = torque 
+        self.rpm       = rpm
 
-    Returned values:
-    shape -- The same transformed input shape. Just for debugging purposes, you
-    can discard it.
-    base_z -- The new base z coordinate (after applying the roll angle). Useful
-    if you want to revert back the transformation
+
+        
+
+class Point_axlTrq:                 # B       E       C       D       F         G
     """
-    # Roll the ship. In order to can deal with large roll angles, we are
-    # proceeding as follows:
-    # 1.- Applying the roll with respect the base line
-    # 2.- Recentering the ship in the y direction
-    # 3.- Readjusting the base line
-    shape.rotate(Vector(0.0, 0.0, 0.0), Vector(1.0, 0.0, 0.0), roll)
-    base_z = shape.BoundBox.ZMin
-    shape.translate(Vector(0.0, draft * math.sin(math.radians(roll)), -base_z))
-    # Trim the ship. In this case we only need to correct the x direction
-    shape.rotate(Vector(0.0, 0.0, 0.0), Vector(0.0, -1.0, 0.0), trim)
-    shape.translate(Vector(draft * math.sin(math.radians(trim)), 0.0, 0.0))
-    shape.translate(Vector(0.0, 0.0, -draft))
-
-    return shape, base_z
-
-
-def getUnderwaterSide(shape, force=True):
-    """Get the underwater shape, simply cropping the provided shape by the z=0
-    free surface plane.
-
-    Position arguments:
-    shape -- Solid shape to be cropped
-
-    Keyword arguments:
-    force -- True if in case the common boolean operation fails, i.e. returns
-    no solids, the tool should retry it slightly moving the free surface. False
-    otherwise. (True by default)
-
-    Returned value:
-    Cropped shape. It is not modifying the input shape
+    Defineds a single point with seven columns from a spreadsheet
+        using the order   B   E   C   D    F.   G     **
+        The unique column names can be self.what_ever in this code module
+        since the PlotAux_* redefines the work version as it is read-in to the 
+        module.
+        ** There is no assignable Axle Speed for AWD for assumed straight
+            and level hardsurface travel.  No AWDRpm was acquired from 
+            Cascadia Motion EVBot graphs.
+            self.awdrpm  = fwdrpm   # either fwdrpm or rwdrpm  
+                             axle rpm do not sum
     """
-    # Convert the shape into an active object
-    Part.show(shape)
-    orig = App.ActiveDocument.Objects[-1]
-    try:
-        guiObj = Gui.ActiveDocument.getObject(orig.Name)
-        guiObj.ShowInTree = False
-    except:
-        pass
+    def __init__(self, gm_vehicle, gndspd, awdtrq, fwdtrq, rwdtrq, awdrpm, fwdrpm, rwdrpm):
+        # Create data storage bin
+        # for Axle Troque and Axle Speed for FWD, RWD, and AWD::just the torque
+        self.gndspd   = gndspd
+        self.awdtrq   = awdtrq 
+        self.fwdtrq   = fwdtrq
+        self.rwdtrq   = rwdtrq
+        self.awdrpm  = fwdrpm   # either fwdrpm or rwdrpm  axle rpm do not sum
+        self.fwdrpm  = fwdrpm
+        self.rwdrpm  = rwdrpm
 
-    bbox = shape.BoundBox
-    xmin = Units.Quantity(bbox.XMin, Units.Length)
-    xmax = Units.Quantity(bbox.XMax, Units.Length)
-    ymin = Units.Quantity(bbox.YMin, Units.Length)
-    ymax = Units.Quantity(bbox.YMax, Units.Length)
-    zmin = Units.Quantity(bbox.ZMin, Units.Length)
-    zmax = Units.Quantity(bbox.ZMax, Units.Length)
-
-    # Create the "sea" box to intersect the ship
-    L = xmax - xmin
-    B = ymax - ymin
-    H = zmax - zmin
-
-    box = App.ActiveDocument.addObject("Part::Box","Box")
-    box.Placement = Placement(Vector(xmin - L, ymin - B, zmin - H),
-                              Rotation(App.Vector(0,0,1),0))
-    box.Length = 3.0 * L
-    box.Width = 3.0 * B
-    box.Height = -zmin + H
-    try:
-        guiObj = Gui.ActiveDocument.getObject(box.Name)
-        guiObj.ShowInTree = False
-    except:
-        pass
-
-    App.ActiveDocument.recompute()
-    common = App.activeDocument().addObject("Part::MultiCommon",
-                                            "UnderwaterSideHelper")
-    common.Shapes = [orig, box]
-    try:
-        guiObj = Gui.ActiveDocument.getObject(common.Name)
-        guiObj.ShowInTree = False
-    except:
-        pass
-    App.ActiveDocument.recompute()
-    if force and len(common.Shape.Solids) == 0:
-        # The common operation is failing, let's try moving a bit the free
-        # surface
-        msg = App.Qt.translate(
-            "ship_console",
-            "Boolean operation failed when trying to get the underwater side."
-            " The tool is retrying such operation slightly moving the free"
-            " surface position")
-        App.Console.PrintWarning(msg + '\n')
-        random_bounds = 0.01 * H.Value
-        i = 0
-        while len(common.Shape.Solids) == 0 and i < COMMON_BOOLEAN_ITERATIONS:
-            i += 1
-            dH = Units.Quantity(random.uniform(-random_bounds, random_bounds),
-                                Units.Length)
-            box.Height = -zmin + H + dH
-            App.ActiveDocument.recompute()
-
-    out = common.Shape
-    App.ActiveDocument.removeObject(common.Name)
-    App.ActiveDocument.removeObject(orig.Name)
-    App.ActiveDocument.removeObject(box.Name)
-    App.ActiveDocument.recompute()
-    return out
-
-
-def areas(ship, n, draft=None,
-                   roll=Units.parseQuantity("0 deg"),
-                   trim=Units.parseQuantity("0 deg")):
-    """Compute the ship transversal areas
-
-    Position arguments:
-    ship -- Ship object (see createShip)
-    n -- Number of points to compute
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-    roll -- Roll angle (0 degrees by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned value:
-    List of sections, each section contains 2 values, the x longitudinal
-    coordinate, and the transversal area. If n < 2, an empty list will be
-    returned.
+class Point_vehFrc:                 # B       E       C       D       F          
     """
-    if n < 2:
-        return []
-
-    if draft is None:
-        draft = ship.Draft
-
-    shape, _ = placeShipShape(ship.Shape.copy(), draft, roll, trim)
-    shape = getUnderwaterSide(shape)
-
-    # Sections distance computation
-    bbox = shape.BoundBox
-    xmin = Units.Quantity(bbox.XMin, Units.Length)
-    xmax = Units.Quantity(bbox.XMax, Units.Length)
-    dx = (xmax - xmin) / (n - 1.0)
-
-    # Since we are computing the sections in the total length (not in the
-    # length between perpendiculars), we can grant that the starting and
-    # ending sections have null area
-    areas = [(xmin, Units.Quantity(0.0, Units.Area))]
-    # And since we just need to compute areas we will create boxes with its
-    # front face at the desired transversal area position, computing the
-    # common solid part, dividing it by faces, and getting only the desired
-    # ones.
-    App.Console.PrintMessage("Computing transversal areas...\n")
-    App.Console.PrintMessage("Some Inventor representation errors can be"
-                             " shown, please ignore them.\n")
-    for i in range(1, n - 1):
-        App.Console.PrintMessage("{0} / {1}\n".format(i, n - 2))
-        x = xmin + i * dx
-        try:
-            f = Part.Face(shape.slice(Vector(1,0,0), x))
-        except Part.OCCError:
-            msg = App.Qt.translate(
-                "ship_console",
-                "Part.OCCError: Area computation failed (x={})").format(
-                    x.UserString)
-            App.Console.PrintError(msg + '\n')
-            areas.append((Units.Quantity(x, Units.Length),
-                          Units.Quantity(0.0, Units.Area)))
-            continue
-        # It is a valid face, so we can add this area
-        areas.append((Units.Quantity(x, Units.Length),
-                      Units.Quantity(f.Area, Units.Area)))
-    # Last area is equal to zero (due to the total length usage)
-    areas.append((Units.Quantity(xmax, Units.Length),
-                  Units.Quantity(0.0, Units.Area)))
-    App.Console.PrintMessage("Done!\n")
-    return areas
-
-
-def displacement(ship, draft=None,
-                       roll=Units.parseQuantity("0 deg"),
-                       trim=Units.parseQuantity("0 deg")):
-    """Compute the ship displacement
-
-    Position arguments:
-    ship -- Ship object (see createShip)
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-    roll -- Roll angle (0 degrees by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned values:
-    disp -- The ship displacement (a density of the water of 1025 kg/m^3 is
-    assumed)
-    B -- Bouyance application point, i.e. Center of mass of the underwater side
-    Cb -- Block coefficient
-
-    The Bouyance center is referred to the original ship position.
+    Defineds a single point with five columns from a spreadsheet
+        using the order   B   E   C   D    F.
+        The unique column names can be self.what_ever in this code module
+        since the PlotAux_* redefines the work version as it is read-in to the 
+        module.
     """
-    if draft is None:
-        draft = ship.Draft
-
-    shape, base_z = placeShipShape(ship.Shape.copy(), draft, roll, trim)
-    shape = getUnderwaterSide(shape)
-
-    vol = 0.0
-    cog = Vector()
-    if len(shape.Solids) > 0:
-        for solid in shape.Solids:
-            vol += solid.Volume
-            sCoG = solid.CenterOfMass
-            cog.x = cog.x + sCoG.x * solid.Volume
-            cog.y = cog.y + sCoG.y * solid.Volume
-            cog.z = cog.z + sCoG.z * solid.Volume
-        cog.x = cog.x / vol
-        cog.y = cog.y / vol
-        cog.z = cog.z / vol
-
-    bbox = shape.BoundBox
-    Vol = (bbox.XMax - bbox.XMin) * (bbox.YMax - bbox.YMin) * abs(bbox.ZMin)
-
-    # Undo the transformations on the bouyance point
-    B = Part.Point(Vector(cog.x, cog.y, cog.z))
-    m = Matrix()
-    m.move(Vector(0.0, 0.0, draft))
-    m.move(Vector(-draft * math.sin(trim.getValueAs("rad")), 0.0, 0.0))
-    m.rotateY(trim.getValueAs("rad"))
-    m.move(Vector(0.0,
-                  -draft * math.sin(roll.getValueAs("rad")),
-                  base_z))
-    m.rotateX(-roll.getValueAs("rad"))
-    B.transform(m)
-
-    try:
-        cb = vol / Vol
-    except ZeroDivisionError:
-        msg = App.Qt.translate(
-            "ship_console",
-            "ZeroDivisionError: Null volume found during the displacement"
-            " computation!")
-        App.Console.PrintError(msg + '\n')
-        cb = 0.0
-
-    # Return the computed data
-    return (DENS * Units.Quantity(vol, Units.Volume),
-            Vector(B.X, B.Y, B.Z),
-            cb)
-
-
-def wettedArea(shape, draft, roll=Units.parseQuantity("0 deg"),
-                             trim=Units.parseQuantity("0 deg")):
-    """Compute the ship wetted area
-
-    Position arguments:
-    shape -- External faces of the ship hull
-    draft -- Ship draft
-
-    Keyword arguments:
-    roll -- Roll angle (0 degrees by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned value:
-    The wetted area, i.e. The underwater surface area
+    def __init__(self, gm_vehicle, gndspd, awdfrc, fwdfrc, rwdfrc, awdcdg):
+        # Create data storage bin
+        # for Axle Troque and Axle Speed for FWD, RWD, and AWD::just the torque
+        self.gndspd   = gndspd
+        self.awdfrc   = awdfrc 
+        self.fwdfrc   = fwdfrc
+        self.rwdfrc   = rwdfrc
+        self.awdcdg  = awdcdg
+ 
+class Point_whlPwr:                 # B       E       C       D       F         G      
     """
-    shape, _ = placeShipShape(shape.copy(), draft, roll, trim)
-    shape = getUnderwaterSide(shape, force=False)
-    submerged_length = shape.BoundBox.ZLength
-
-    area = 0.0
-    for f in shape.Faces:
-        if f.BoundBox.ZLength < 0.01 * submerged_length and \
-           abs(f.BoundBox.ZMin) < 0.01 * submerged_length:
-            # Discard the eventual intersections with the free surface
-            continue
-        area = area + f.Area
-    return Units.Quantity(area, Units.Area)
-
-
-def floatingArea(ship, draft=None,
-                       roll=Units.parseQuantity("0 deg"),
-                       trim=Units.parseQuantity("0 deg")):
-    """Compute the ship floating area
-
-    Position arguments:
-    ship -- Ship object (see createShip)
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-    roll -- Roll angle (0 degrees by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned values:
-    area -- Ship floating area
-    cf -- Floating area coefficient
+    Defineds a single point with six columns from a spreadsheet
+        using the order   B   E   C   D    F.
+        The unique column names can be self.what_ever in this code module
+        since the PlotAux_* redefines the work version as it is read-in to the 
+        module.
     """
-    if draft is None:
-        draft = ship.Draft
+    def __init__(self, gm_vehicle, gndspd, awdpwr, fwdpwr, rwdpwr, rbatlim, fbatlim):
+        self.gndspd   = gndspd
+        self.awdpwr   = awdpwr 
+        self.fwdpwr   = fwdpwr
+        self.rwdpwr   = rwdpwr
+        self.rbatlim   = rbatlim
+        self.fbatlim   = fbatlim
+ 
 
-    # We want to intersect the whole ship with the free surface, so in this case
-    # we must not use the underwater side (or the tool will fail)
-    shape, _ = placeShipShape(ship.Shape.copy(), draft, roll, trim)
-
-    try:
-        f = Part.Face(shape.slice(Vector(0,0,1), 0.0))
-        area = Units.Quantity(f.Area, Units.Area)
-    except Part.OCCError:
-        msg = App.Qt.translate(
-            "ship_console",
-            "Part.OCCError: Floating area cannot be computed")
-        App.Console.PrintError(msg + '\n')
-        f = None
-        area = Units.Quantity(0.0, Units.Area)
-
-    bbox = shape.BoundBox
-    Area = Units.Quantity(
-        (bbox.XMax - bbox.XMin) * (bbox.YMax - bbox.YMin), Units.Area)
-    try:
-        cf = (area / Area).Value
-    except ZeroDivisionError:
-        msg = App.Qt.translate(
-            "ship_console",
-            "ZeroDivisionError: Null area found during the floating area"
-            " computation!")
-        App.Console.PrintError(msg + '\n')
-        cf = 0.0
-
-    return area, cf, f
-
-
-def BML(ship, fs, draft=None,
-                  roll=Units.parseQuantity("0 deg"),
-                  trim=Units.parseQuantity("0 deg")):
-    """Compute the moment required to trim the ship 1cm
-
-    Position arguments:
-    ship -- Ship object (see createShip)
-    fs -- The shape of the free surface
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-    roll -- Roll angle (0 degrees by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned value:
-    BML radius and the displacement (would be useful for further computations,
-    like TMC)
+class Point_accTrc:                 # B       E       C       D       F         G
     """
-    disp, B_orig, _ = displacement(ship, draft, roll, trim)
-    vol = disp / DENS
-    inertia_unit = (Units.Quantity(1, Units.Length)**4).Unit
-    return Units.Quantity(fs.MatrixOfInertia.A22, inertia_unit) / vol, disp
-
-
-def TMC(ship, fs, draft=None,
-                  roll=Units.parseQuantity("0 deg"),
-                  trim=Units.parseQuantity("0 deg")):
-    """Compute the moment required to trim the ship 1cm
-
-    Position arguments:
-    ship -- Ship object (see createShip)
-    fs -- The shape of the free surface. If None is passed, the BML will be
-          computed heuristically, i.e. the ship will be rotated a small angle,
-          tracking the bouyance center.
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-    roll -- Roll angle (0 degrees by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned value:
-    Moment required to trim the ship 1cm. Such moment is positive if it cause a
-    positive trim angle. The moment is expressed as a mass by a distance, not as
-    a force by a distance
+    Defineds a single point with seven columns from a spreadsheet
+        using the order   B   E   C   D    F.   G     **
+        The unique column names can be self.what_ever in this code module
+        since the PlotAux_* redefines the work version as it is read-in to the 
+        module.
+        ** There is no assignable Axle Speed for AWD for assumed straight
+            and level hardsurface travel.  No AWDRpm was acquired from 
+            Cascadia Motion EVBot graphs.
+           fwdtrc and rwdtrc differ due to front wheel to rear wheel weight distribution  
+           awdtrc is not relevent
     """
-    if draft is None:
-        draft = ship.Draft
-
-    if fs is not None:
-        bml, disp = BML(ship, fs, draft=draft, roll=roll, trim=trim)
-        return disp * bml / ship.Length.getValueAs('cm').Value
-
-    disp_orig, B_orig, _ = displacement(ship, draft, roll, trim)
-    factor = 10.0
-    x = 0.5 * ship.Length.getValueAs('cm').Value
-    y = 1.0
-    angle = math.atan2(y, x) * Units.Radian
-    trim_new = trim + factor * angle
-    disp_new, B_new, _ = displacement(ship, draft, roll, trim_new)
-
-    mom0 = disp_orig * Units.Quantity(B_orig.x, Units.Length)
-    mom1 = disp_new * Units.Quantity(B_new.x, Units.Length)
-    return (mom1 - mom0) / factor
+    def __init__(self, gm_vehicle, gndspd, awdacc, fwdacc, rwdacc, fwdtrc, rwdtrc):
+        # Create data storage bin
+        # for Axle Troque and Axle Speed for FWD, RWD, and AWD::just the torque
+        self.gndspd   = gndspd
+        self.awdacc   = awdacc 
+        self.fwdacc   = fwdacc
+        self.rwdacc   = rwdacc
+        self.awdtrc  = fwdtrc   # either fwdtrc or rwdtrc  axle trc do not sum
+        self.fwdtrc  = fwdtrc
+        self.rwdtrc  = rwdtrc
 
 
-def BMT(ship, fs, draft=None, trim=Units.parseQuantity("0 deg")):
-    """Calculate "ship Bouyance center" - "transversal metacenter" radius
 
-    Position arguments:
-    ship -- Ship object (see createShip)
-    fs -- The shape of the free surface. If None is passed, the BMT will be
-          computed heuristically, i.e. the ship will be rotated a small angle,
-          tracking the bouyance center.
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-    trim -- Trim angle (0 degrees by default)
-
-    Returned value:
-    BMT radius
+class Point_batCap:                 # A      C       E       C       D       F         G    H
     """
-    if draft is None:
-        draft = ship.Draft
-
-    roll = Units.parseQuantity("0 deg")
-    disp, B0, _ = displacement(ship, draft, roll=roll, trim=trim)
-    if fs is not None:
-        vol = disp / DENS
-        inertia_unit = (Units.Quantity(1, Units.Length)**4).Unit
-        return Units.Quantity(fs.MatrixOfInertia.A11, inertia_unit) / vol
-
-    nRoll = 2
-    maxRoll = Units.parseQuantity("7 deg")
-
-    BM = 0.0
-    for i in range(nRoll):
-        roll = (maxRoll / nRoll) * (i + 1)
-        _, B1, _ = displacement(ship, draft, roll, trim)
-        #     * M
-        #    / \
-        #   /   \  BM     ==|>   BM = (BB/2) / sin(alpha/2)
-        #  /     \
-        # *-------*
-        #     BB
-        BB = B1 - B0
-        BB.x = 0.0
-        # nRoll is actually representing the weight function
-        BM += 0.5 * BB.Length / math.sin(math.radians(0.5 * roll)) / nRoll
-    return Units.Quantity(BM, Units.Length)
-
-
-def mainFrameCoeff(ship, draft=None):
-    """Compute the main frame coefficient
-
-    Position arguments:
-    ship -- Ship object (see createShip)
-
-    Keyword arguments:
-    draft -- Ship draft (Design ship draft by default)
-
-    Returned value:
-    Ship main frame area coefficient
+    Defineds a single point with seven columns from a spreadsheet
+        using the order   B   E   C   D    F.   G     H **
+        The unique column names can be self.what_ever in this code module
+        since the PlotAux_* redefines the work version as it is read-in to the 
+        module.
+        ** There is no assignable Axle Speed for AWD for assumed straight
+            and level hardsurface travel.  No AWDRpm was acquired from 
+            Cascadia Motion EVBot graphs.
+           fwdtrc and rwdtrc differ due to front wheel to rear wheel weight distribution  
+           awdtrc is not relevent
     """
-    if draft is None:
-        draft = ship.Draft
+    def __init__(self, gm_vehicle, cellcur, cellvolt, pekpwr, vsag, pckcur, pckvolt, mopwr, modui):
+        # Create data storage bin
+        # for Axle Troque and Axle Speed for FWD, RWD, and AWD::just the torque
+        self.cellcur   = cellcur
+        self.cellvolt   = cellvolt 
+        self.pekpwr    = pekpwr
+        self.vsag       = vsag
+        self.pckcur     = pckcur   # either fwdtrc or rwdtrc  axle trc do not sum
+        self.pckvolt    = pckvolt
+        self.mopwr    = mopwr
+        self.modui      = modui
 
-    shape, _ = placeShipShape(ship.Shape.copy(), draft,
-                              Units.parseQuantity("0 deg"),
-                              Units.parseQuantity("0 deg"))
-    shape = getUnderwaterSide(shape)
-
-    try:
-        f = Part.Face(shape.slice(Vector(1,0,0), 0.0))
-        area = f.Area
-    except Part.OCCError:
-        msg = App.Qt.translate(
-            "ship_console",
-            "Part.OCCError: Main frame area cannot be computed")
-        App.Console.PrintError(msg + '\n')
-        area = 0.0
-
-    bbox = shape.BoundBox
-    Area = (bbox.YMax - bbox.YMin) * (bbox.ZMax - bbox.ZMin)
-
-    try:
-        cm = area / Area
-    except ZeroDivisionError:
-        msg = App.Qt.translate(
-            "ship_console",
-            "ZeroDivisionError: Null area found during the main frame area"
-            " coefficient computation!")
-        App.Console.PrintError(msg + '\n')
-        cm = 0.0
-
-    return cm
-
-
-class Point:
-    """Hydrostatics point, that contains the following members:
-
-    draft -- Ship draft
-    trim -- Ship trim
-    disp -- Ship displacement
-    xcb -- Bouyance center X coordinate
-    wet -- Wetted ship area
-    mom -- Trimming 1cm ship moment
-    farea -- Floating area
-    KBt -- Transversal KB height
-    BMt -- Transversal BM height
-    Cb -- Block coefficient.
-    Cf -- Floating coefficient.
-    Cm -- Main frame coefficient.
-
-    The moment to trim the ship 1 cm is positive when is resulting in a positive
-    trim angle.
-    """
-    def __init__(self, ship, faces, draft, trim):
-        """Compute all the hydrostatics.
-
-        Position argument:
-        ship -- Ship instance
-        faces -- Ship external faces
-        draft -- Ship draft
-        trim -- Trim angle
-        """
-        disp, B, cb = displacement(ship, draft=draft, trim=trim)
-        if not faces:
-            wet = 0.0
-        else:
-            wet = wettedArea(faces, draft=draft, trim=trim)
-        farea, cf, fshape = floatingArea(ship, draft=draft, trim=trim)
-        mom = TMC(ship, fshape, draft=draft, trim=trim)
-        bm = BMT(ship, fshape, draft=draft, trim=trim)
-        cm = mainFrameCoeff(ship, draft=draft)
-        # Store final data
-        self.draft = draft
-        self.trim = trim
-        self.disp = disp
-        self.xcb = Units.Quantity(B.x, Units.Length)
-        self.wet = wet
-        self.farea = farea
-        self.mom = mom
-        self.KBt = Units.Quantity(B.z, Units.Length)
-        self.BMt = bm
-        self.Cb = cb
-        self.Cf = cf
-        self.Cm = cm
