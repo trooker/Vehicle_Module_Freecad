@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>260</width>
-    <height>260</height>
+    <height>290</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,176 +19,196 @@
   <property name="windowTitle">
    <string>Plot Dyno Chart</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="group_trim">
-     <property name="toolTip">
-      <string>The trim angle to be considered</string>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>231</width>
+     <height>261</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout"/>
+  </widget>
+  <widget class="QGroupBox" name="grpbx_master">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>229</width>
+     <height>289</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QGroupBox" name="grpbx_sprdsheet">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>221</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Select Plots to View</string>
+    </property>
+    <widget class="QCheckBox" name="chkbx_FntMotorDyno">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>181</width>
+       <height>23</height>
+      </rect>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLabel" name="trim_label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Trim</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="Gui::InputField" name="trim">
-        <property name="text">
-         <string notr="true">0 deg</string>
-        </property>
-        <property name="unit" stdset="0">
-         <string notr="true">deg</string>
-        </property>
-        <property name="quantity" stdset="0">
-         <double>0.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <property name="text">
+      <string>Front Motor Dyno Chart</string>
+     </property>
     </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QGroupBox" name="group_draft">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <widget class="QCheckBox" name="chkbx_RrMotorDyno">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>50</y>
+       <width>191</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Rear Motor Dyno Chart</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkbx_AxleTorque">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>70</y>
+       <width>151</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Axle Torque</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkbx_VehForces">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>90</y>
+       <width>181</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Vehicle Forces at Play</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkbx_WheelPwr">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>110</y>
+       <width>211</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Wheel Power - Battery Limit</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkbx_AccelTraction">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>130</y>
+       <width>201</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Acceleration - Traction Est.</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkbx_FnBatteryCapa">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>150</y>
+       <width>191</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Front Battery Capability</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="chkbx_RrBatteryCapa">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>170</y>
+       <width>181</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Rear Battery Capability</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>200</y>
+      <width>221</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Manage Data Rows</string>
+    </property>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>131</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Adjust Rows to Plot</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinbx_Rows">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>30</y>
+       <width>44</width>
+       <height>26</height>
+      </rect>
      </property>
      <property name="toolTip">
-      <string>Range of considered draft. The hydrostatucs are computed for several points between the selected minimum and maximum draft</string>
+      <string>Default: 16. Range: 2-50</string>
      </property>
-     <property name="title">
-      <string>Drafts</string>
+     <property name="minimum">
+      <number>2</number>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <layout class="QGridLayout" name="subgroup_data">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetDefaultConstraint</enum>
-        </property>
-        <item row="2" column="0">
-         <widget class="QLabel" name="n_draftLabel">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Number of points</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="min_draft_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Minimum draft</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QSpinBox" name="n_draft">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimum">
-           <number>2</number>
-          </property>
-          <property name="maximum">
-           <number>9999</number>
-          </property>
-          <property name="value">
-           <number>11</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="max_draft_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Maximum draft</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="Gui::InputField" name="min_draft">
-          <property name="text">
-           <string notr="true">0 m</string>
-          </property>
-          <property name="unit" stdset="0">
-           <string notr="true">m</string>
-          </property>
-          <property name="quantity" stdset="0">
-           <double>0.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="Gui::InputField" name="max_draft">
-          <property name="text">
-           <string notr="true">1.0 m</string>
-          </property>
-          <property name="unit" stdset="0">
-           <string notr="true">m</string>
-          </property>
-          <property name="quantity" stdset="0">
-           <double>1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
+     <property name="maximum">
+      <number>52</number>
+     </property>
+     <property name="value">
+      <number>16</number>
+     </property>
     </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QGroupBox" name="group_pbar">
-     <property name="toolTip">
-      <string>Progress of the computation</string>
-     </property>
-     <layout class="QGridLayout" name="group_progress">
-      <item row="0" column="0">
-       <widget class="QProgressBar" name="pbar">
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-  </layout>
+   </widget>
+  </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Gui::InputField</class>
-   <extends>QLineEdit</extends>
-   <header location="global">Gui/Inputfield.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

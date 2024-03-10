@@ -67,9 +67,12 @@
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
            <widget class="QComboBox" name="GM_VehicleLdExamples">
+            <property name="currentText">
+             <string>Basic Ground Mobile Wheeled Vehicle Model</string>
+            </property>
             <item>
              <property name="text">
-              <string>Basic Ground Modile Wheeled Vehicle Model</string>
+              <string>Basic Ground Mobile Wheeled Vehicle Model</string>
              </property>
             </item>
             <item>
@@ -107,7 +110,7 @@
               <string>Project 996 Placeholder</string>
              </property>
             </item>
-           <item>
+            <item>
              <property name="text">
               <string>Project 995 Placeholder</string>
              </property>
