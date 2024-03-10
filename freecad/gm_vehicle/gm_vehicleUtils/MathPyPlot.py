@@ -1,6 +1,6 @@
 #***************************************************************************
 #*  
-#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*   Copyright (c) 2024 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
 #*                                                                         *
 #*   This program is free software; you can redistribute it and/or modify  *
 #*   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -19,27 +19,48 @@
 #*   USA                                                                   *
 #*                                                                         *
 #***************************************************************************
+"""
+240227_tr This module supports the special needs of Plotting multiple axes along
+            the left, right and bottom of the gm_vehicle workbench.  The content of
+            autolim(ax) was copied from #*   Copyright (c) 2011, 2016 Jose Luis 
+            Cercos Pita <jlcercos@gmail.com>   *
+
+"""
+
 
 
 import FreeCAD as App
+import sys
+import math
 from FreeCAD import Units
-
-def isGreaterThan(a,b):
-# Simple placeholder function is A>B
-    if (a > b):
-        return True
-    return False
+import numpy as np
+import matplotlib.pyplot as plt  ## 240211 https://stackoverflow.com/questions/60733837/typeerror-unhashable-type-numpy-ndarray-when-attempting-to-make-plot-using-n
 
 
 """
-Gets the substring numeric found from 0 to space delimiter
-    Given String example  "3.8889 yd"  
-                              0.......5678
-    Returns 3.8889
-""" 
-def parseFloatFromStr(inStr):	
-        stopper = inStr.index(" ")
-        data   = inStr[0:stopper]
-        floater = float(data)
-        return floater
-	
+argument ax
+return ax modified
+where    ax in self.plt1...n.axesList  and n is the number of plots to be executed
+ 
+"""
+
+def autolim(ax):
+    xmin, xmax = sys.float_info.max, -sys.float_info.max
+    ymin, ymax = sys.float_info.max, -sys.float_info.max
+    for l in ax.get_lines():
+        xmin = min(xmin, min(l.get_xdata()))
+        xmax = max(xmax, max(l.get_xdata()))
+        ymin = min(ymin, min(l.get_ydata()))
+        ymax = max(ymax, max(l.get_ydata()))
+        msg = "autolim    xmin: " + str(min(xmin, min(l.get_xdata()))) + "     xmax: " + str(max(xmax, max(l.get_xdata())))  +  "     ymin: " + str(min(ymin, min(l.get_ydata())))  +  "     ymax: " +str(max(ymax, max(l.get_ydata())))   
+        App.Console.PrintWarning(msg + '\n')
+
+    try:
+        ax.set_xlim(xmin, xmax)
+    except TypeError:
+        pass
+    try:
+        ax.set_ylim(ymin, ymax)
+    except TypeError:
+        pass
+    return ax
