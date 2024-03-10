@@ -1,6 +1,9 @@
 #***************************************************************************
 #*
-#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*   Copyright (c) 2023, 2024 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*
+#*   240127_tr See https://wiki.freecad.org/FeaturePython_Custom_Properties#App::PropertyForce for units
+#*       Coefficent of Drag also has issue with units.
 #*
 #*   Used general GM_Vehicle flow for TaskPanel.y substituting gm_vehicle content     *
 #*                                                                         *
@@ -56,7 +59,7 @@ def add_gm_vehicle_props(obj):
     try:
         obj.getPropertyByName('Length')
     except AttributeError:
-        tooltip = "GM_Vehicle length [m]"
+        tooltip = "Bumper to bumper length [in]"
         obj.addProperty("App::PropertyLength",
                         "Length",
                         "GM_Vehicle",
@@ -64,7 +67,7 @@ def add_gm_vehicle_props(obj):
     try:
         obj.getPropertyByName('Width')
     except AttributeError:
-        tooltip = "GM_Vehicle with [m]"
+        tooltip = "'Vehicle Width OEdge Front Tires [in]"
         obj.addProperty("App::PropertyLength",
                         "Width",
                         "GM_Vehicle",
@@ -72,7 +75,7 @@ def add_gm_vehicle_props(obj):
     try:
         obj.getPropertyByName('Height')
     except AttributeError:
-        tooltip = "GM_Vehicle draft [m]"
+        tooltip = "GM_Vehicle height [in]"
         obj.addProperty("App::PropertyLength",
                         "Height",
                         "GM_Vehicle",
@@ -88,6 +91,109 @@ def add_gm_vehicle_props(obj):
                         "GM_Vehicle",
                         tooltip).Weights = []
     App.Console.PrintMessage("gm_vehicle object created\n")
+    
+    try:
+        obj.getPropertyByName('Wheel_Base')
+    except AttributeError:
+        tooltip = "Distance between centerline of front and back wheels [in]"
+        obj.addProperty("App::PropertyLength",
+                        "Wheel_Base",
+                        "GM_Vehicle",
+                        tooltip).Wheel_Base = 0
+
+    try:
+        obj.getPropertyByName('Track_Width')
+    except AttributeError:
+        tooltip = "Distance between the centerline of the front tires [in]"
+        obj.addProperty("App::PropertyLength",
+                        "Track_Width",
+                        "GM_Vehicle",
+                        tooltip).Track_Width = 0.0
+  
+  
+    
+    try:
+        obj.getPropertyByName('Curb_Weight')
+    except AttributeError:
+        tooltip = "Weght of the vehicle before loading [lb]"
+        obj.addProperty("App::PropertyLength",
+                        "Curb_Weight",
+                        "GM_Vehicle",
+                        tooltip).Curb_Weight = 1950.0
+
+    try:
+        obj.getPropertyByName('Area_Frontal')
+    except AttributeError:
+        tooltip = "Area of frontal vehicle surface [m^2]"
+        obj.addProperty("App::PropertyLength",
+                        "Area_Frontal",
+                        "GM_Vehicle",
+                        tooltip).Area_Frontal = 0.0
+
+    try:
+        obj.getPropertyByName('CDrag')
+    except AttributeError:
+        tooltip = "Coefficient of Drag"
+        obj.addProperty("App::PropertyLength",  #unitless  issue with spreadsheet
+                        "CDrag",
+                        "GM_Vehicle",
+                        tooltip).CDrag = 0.0
+
+    try:
+        obj.getPropertyByName('Roll_Res_Hard')
+    except AttributeError:
+        tooltip = "Rolling Resistance to overcome inital movement [lb]"
+        obj.addProperty("App::PropertyForce",
+                        "Roll_Res_Hard",
+                        "GM_Vehicle",
+                        tooltip).Roll_Res_Hard = 0.0
+
+    try:
+        obj.getPropertyByName('Roll_Res_Sand')
+    except AttributeError:
+        tooltip = "Rolling Resistance to overcome inital movement [lb]"
+        obj.addProperty("App::PropertyForce",
+                        "Roll_Res_Sand",
+                        "GM_Vehicle",
+                        tooltip).Roll_Res_Sand = 0.0
+
+
+    try:
+        obj.getPropertyByName('Tire_Dia_Frnt')
+    except AttributeError:
+        tooltip = "Front Tire Diameter [in]"
+        obj.addProperty("App::PropertyLength",
+                        "Tire_Dia_Frnt",
+                        "GM_Vehicle",
+                        tooltip).Tire_Dia_Frnt = 29.0
+
+    try:
+        obj.getPropertyByName('Tire_Dia_RR')
+    except AttributeError:
+        tooltip = "Rear Tire Diameter [in]"
+        obj.addProperty("App::PropertyLength",
+                        "Tire_Dia_RR",
+                        "GM_Vehicle",
+                        tooltip).Tire_Dia_RR = 29.0
+
+    try:
+        obj.getPropertyByName('Tire_Spec_Frnt')
+    except AttributeError:
+        tooltip = "Tire Specification xxx/yyRzz"
+        obj.addProperty("App::PropertyString",
+                        "Tire_Spec_Frnt",
+                        "GM_Vehicle",
+                        tooltip).Tire_Spec_Frnt = "235/70R16"
+
+    try:
+        obj.getPropertyByName('Tire_Spec_RR')
+    except AttributeError:
+        tooltip = "Tire Specification xxx/yyRzz"
+        obj.addProperty("App::PropertyString",
+                        "Tire_Spec_RR",
+                        "GM_Vehicle",
+                        tooltip).Tire_Spec_RR = "235/70R16"
+
                         
     return obj
 

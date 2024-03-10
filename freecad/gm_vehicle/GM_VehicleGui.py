@@ -74,7 +74,7 @@ class CreateGM_Vehicle:
         MenuText = 'Create a new GM_Vehicle'
         ToolTip   = 'Create a new Wheeled Ground Mobile Vehicle rolling chassis'
         App.Console.PrintMessage("GM_VehicleGui.py CreateGM_Vehicle() retrun from Resources doit\n")
-        return {'Pixmap': 'GM_Vehicle_Module',           # works with Ship  but not  GM_Vehicle_Module',
+        return {'Pixmap': 'GM_Vehicle_Module',           
                 'MenuText': MenuText,
                 'ToolTip': ToolTip}
 
@@ -148,6 +148,23 @@ class WebMMup:
                 'ToolTip': ToolTip}
 
 
+class WebVuPort:
+    def IsActive(self):
+        return bool(Selection.get_objects()) # for dev only bool(Selection.get_ships())
+
+    def Activated(self):
+        from . import gm_vehicleWebVuPort  #shipHydrostatics
+        gm_vehicleWebVuPort.load()  #shipHydrostatics.load()
+
+    def GetResources(self):
+        MenuText = 'Access the Virtual Models website'
+        ToolTip =  'Maximize FC! CloseCombo/Tree Panel to render vuport.com'
+        App.Console.PrintMessage("Rendering vuport.com webpage")  
+        App.Console.PrintMessage(ToolTip)       
+        return {'Pixmap': 'WebVuPort',  
+                'MenuText': MenuText,
+                'ToolTip': ToolTip}
+
 
 
 FreeCADGui.addCommand('GM_Vehicle_LoadExample', LoadExample())
@@ -156,5 +173,7 @@ FreeCADGui.addCommand('GM_Vehicle_DynoChart',DynoChart ())
 FreeCADGui.addCommand('GM_Vehicle_WebEVBot',WebEVBot ())
 FreeCADGui.addCommand('GM_Vehicle_WebAbbott',WebAbbott ())
 FreeCADGui.addCommand('GM_Vehicle_WebMMup',WebMMup ())
+FreeCADGui.addCommand('GM_Vehicle_WebVuPort',WebVuPort ())
+
 #FreeCADGui.addCommand('Ship_Hydrostatics', Hydrostatics())
 
