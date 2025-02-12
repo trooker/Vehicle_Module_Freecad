@@ -1,9 +1,14 @@
-# GM_Vehicle_Module for Freecad
+# GM_Vehicle_Module for FreeCAD
 A FreeCAD Workbench supporting the creation of virtual and real ground mobile vehicles (wheeled).
 
 # FreeCAD GM Vehicle Workbench
                           
 ![Vehicle Workbench Logo](freecad/gm_vehicle/resources/icons/VehicleWorkbench.svg)
+
+# Vehcile Design Macros
+A collection of FreeCAD macros used to support the GM Vehicle Workbench.  At this time the must be manually 
+downloaded and installed from the Vehicle_Module_FreeCAD repository.  See the Vehicle_Design_Macro folder README for further details.
+
 
 **Welcome to FreeCAD GM_Vehicle!**
 
@@ -38,9 +43,17 @@ It currently offers the following tools:
 
 TBD
 
+## System Requirements
+1> FreeCAD 1.0.0  <https://wiki.freecad.org/User_hub>
+2> Python 3 <https://wiki.freecad.org/Introduction_to_Python>
+
+## Add-On FreeCAD Workbenches Required
+1> A2Plus
+
+
 ## Install
 
-This workbench/module is currently only available as a public GITHUB repositoty under trooker.  It is not ready for general usage.  But it can deliver a perception of "EV design rendering and potential behave/performance."   Please contact the author for assistance or with helpful commnets.
+This workbench/module and supporting macros are currently only available as a public GITHUB repositoty under trooker.  It is not ready for general usage.  But it can deliver a perception of "EV design rendering and potential behave/performance."   Please contact the author for assistance or with helpful commnets.
 
 This workbench will eventually be available for download via the FreeCAD [Addon Manager].  It will also be available for manual downloading to the designer's Mod folder in the disigner's local FreeCAD environment.  See https://www.youtube.com/watch?v=NXN7TOg3kj4  or/and https://www.youtube.com/watch?v=cYevV8zy5sM  for instructional videos on FreeCAD installation and installing workbenches.
 
@@ -79,11 +92,22 @@ Please open tickets in the
 Vehicle Workbench Module Team
  - Lucca Uzzo <luzzo@abbottanp.com> (Abbottanp Project Manager)
  - Quinn Dasher <qed@abbottanp.com> (Senior Software Engineer)
+
+Chassis Design using FreeCAD Topographical Feature
+ - Adapted chassis components,shape, body, form from LES_Tower.py ascribed to Dave of <https://www.davesrocketshop.com>   
+ - First reference published at <https://forum.freecad.org/viewtopic.php?t=20844&sid=c6cbb4d51b4110835650bdf263d1ac2b&start=10>  regarding: Help making a tubular tower  dated 20170222 
+
+
+Topographical Scripting <https://wiki.freecad.org/Topological_data_scripting>
+- FreeCAD.org authors unknown 
+- Syntax and excellent examples 
+
  
  Ship Module Team
  - Jose Luis Cercós Pita <jlcercos@gmail.com>
  - Juan Manuel Muñoz-Godin (Vehicle resistance Holtrop and Amadeo tools)
  - Antonio Souto-Iglesias (Advisor of Juan Manuel Muñoz-Godin)
+ - Module design used as template
  
  Chassis Module Team
  - Daniel Wood <https://github.com/dubstar-04> Chassis Module architet
