@@ -1,0 +1,235 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*  
+#* This program links the user's previously Cascadia Motion (CM( EVBot design tool results
+#* 
+#* For example navigate to Cascadia Motion EVBot Results
+#* Found at ~/.local/share/FreeCAD/Mod/freecad.gm_vehicle/docs
+#* EVBot_ EV_240120_1600 - _evbot@cascadiamotion.com_ _evbot@cascadiamotion.com_ - 2024-01-20 1600.eml
+#*                                                                             
+#*   with the real-time on-line EVBot tool environment allowing the user to
+#*   to make changes in the design or to leverage the design to a new version.
+#*   The user is encouraged to view the associated "Quick Start" and "More Detail"
+#*   videos for more information on usage and techincal support.
+#*   
+#*   REQUIREMENTS:  The user must have the results from a "prior" CM EVBot EVBot design
+#*   effort.  The CM EVBot results is sent from CM and store locally as am email message.
+#*   
+#*   SEQUENCE of EVENTS:
+#*   1> Open the FreeCAD GM_Vehicle workbench if it is not already active.
+#*	 2> Insure the "Report View" is displayed.  Monitor it thoughout the sequence for messages.
+#*   3> Invoke the Macro titled "View - Edit Desgin Using EVBot" by slecting the upside-down EVBot icon.
+#*   4> Select the  "Load EVBot Email" button to navigate to the location where the existing email has 
+#*      was saved previously.  Select that "email file" with the elm extension.
+#*	 5> Observe the following: 
+#*      5.1> The URL required to "link" to the EVBot design tool with instance of results 
+#*            displayed  is shownin the "Report view".  That URL is available to the user.
+#*            for copy/paste usage as needed by the user.
+#*      5.2> The FreeCAD statusbar along the bottom pops a "loading status bar" indicating 
+#*            the loading process underway.
+#*      5.3> A new tab sheet appears in the default browser for the system. The tabsheet will 
+#*            quickly display elasticemail.com url that trasnsitons/renders to the casadia motion URL.
+#*   6> View and edit in the Cascadia Motion EVBot design tool environment.
+#*		Note that the EVBot requires the user to expand the width of the EVBot GUI tool/browser
+#*      to properly View or Edit the design.  This can be done in one of three ways.
+#*		6.1> View Option 1: No longer available due to upgrade
+#*      6.2> View Option 2: No longer available due to upgrade
+#*      6.3> View Option 3: The python library now forces a "separate" browser tab instance and 
+#*           pasted the "copied URL" into the browser instance.  In this way the user can 
+#*           also engage in information/knowledge transer.
+#*   7> The user should consider:
+#*      7.1> Backing-up existing EVBot Results files before ever starting any design work.
+#*      7.2> Saving any changes made in the EVBot enviornment using a "new design filename" 
+#*           as the Configuration Name (subject line of the email results sent from EVBot 
+#*           to user).  The filename should be unique and representative of the contents.
+#*      7.3> As soon as possible close the browser instance to prevent accidental 
+#*           changes from being embedded in the content of the EVBot Email Results.
+#*
+#*INITIAL INSTALL of Macro
+#*1> Install the macro in your personal FreeCAD/Macro folder 
+#*2> Install the evbot.svg icon in your personal FreeCad/myicon or .../resource/icon folders
+#*3> Use the Tools Customizer to add macro and icon  to Macros 
+#*4> Use the Tools Customizer to add the Toolbar for the GM_Vehicle_Gui category
+#*******************************************************
+"""
+250211_lu Completed webbrowser transition and customization of GM_Vehicle Tool maco-tools
+
+250210_lu The WebGui no longer works from within FC1.0.0.  But webbrowser module works "some-what".  
+		The user can pick the elm results email and view the header plus the begin/end cut.  But the 
+		passthrough to CS EVBot design tool no longer works.
+
+250208_lu Reorganize macro for viewing existing Cascadia Motion EVBot results and making
+			changes to it.
+"""
+
+
+# Macro Begin: /home/username/.FreeCAD/web_evbot.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+import Web
+import webbrowser
+#import WebGui
+# 250208_lu https://forum.freecad.org/viewtopic.php?t=92453
+"""
+import FreeCADGui
+import webbrowser
+import urllib
+from urllib import request
+webbrowser.open("https://github.com/FreeCAD/FreeCAD-Bund ... kly-builds")
+contentPage = request.urlopen(u"https://wiki.freecad.org/Macro_FCInfo/fr").readlines()
+"""
+
+# See MangoJelly https://www.youtube.com/watch?v=asLTXzkFjLY
+# /home/tom/.local/share/FreeCAD/Mod/freecad.gm_vehicle/freecad/gm_vehicle/resources/bin4evbot
+# https://15gxp.trk.elasticemail.com/tracking/click?d=mujMirY7sjNPOFslZrrhTImGoCsV1UHg1Fp6JAXliB5dhBhC5EXCKMSqsJ10YvwQYG59zK3weXNQ9nvrpTaAxJVRxDe6KGTcKQsM9IJKaBYpdEc_GB1PxGdvrrkMA2AZx-8KMGdoMvoiAdFI-gK8ev-NmQXxO8RKzJFgBJfv7z5HMFa19q_HJFFe4nywQ895z3PFsK2q0ms5VcobcUqxbbSoNZXkqVW5qbPgplKxYgXqIJKUTA3q7yx9FdWqGp6N7gk4dp-uZrII9ZhyGjBSR38N8PP_G01mtiO9c1jWf3VyZKPzWjiS09qOxVIm42auY55YS1seUbnpzf8dRAw7AM-N9MsLBHdqP-03_4PM1WmUxVv1iYxvs5bGxWacb_lqbQS7zkSpGe7FfZws3-sEmeGQexH6ql7tc-yknHJ0aH2jUt8dh5Tj1rjqg7IRJ1K1SldxXcYzgyluiUmWREAFe00Teyf0TzXkn9sjyyaZXbZiDeckfcCEVVY3X4AFXWShtiyWhSxDDUk7TOylqQzNfl21s4H3TK1f5gSFxkKXDMHBPQYR3UUL7nzOmTHuQaF4JudSBM5gffT_jDtniGioh24LuKAEL3BaYCCi32UyX99lCX8XGU-r9xFrYUxcJwx09Cr_XaicsslNgsQPV1II1XPhO5L-1PgBPJRTMBu9nkaA_kENiglWL80I7Z4oxt_Oqe0OuML0zioiVIZ9cc873IDWZY-WjijQe2PLm1a5usP0eJq8O9yeqCqYcFD55iDuwKopsrqCwa0hlWquEqQ_fFTlAYbQDtco9NKm22S7iCzpxBBksUSaXtGAEUHm-QbjeqDYfYhU7CO-ejb4OAxWYCwqs1EA0Xx4LsTMG0zqXTi1sr0CirQmNpZ_Gh3px6DzsN4HIo3EgbjIujaEDvW8mk_6xUVeOmjmiBEDFB3jZMvUi4SviAnjviqCilUSpXkNid4qJOl02mOAAiM4X1dmS5_JdXKyNefy2-YeiqLRyaBYPnIJThbOnxGO0djBe0TB4BWBSWxkXVbd7xM4AOhSQ26DOIAnd9j91C2eEtIuM9MgZ62MeUx0wG9Km7jH7jKzfGBtgvn24faqCNIRdFhCchv8YMf_B7_h0HPqMfjrJHRXHksH1wAiQs1Oriw2rwptK6miNUm9-uYKfdDv6uQ81hzUJBUZe0Gc79VcYK6y98zpV-T4Q0ncVQv2yUAZZBEhLdXjRQW0_LchzeGWvYyy9UEtWnSI12Ag5b3TfXMIGgZqFGltr7O63ay5Id5WC966hmH_ciJcn-X46Rmc_W6evltvNvLFlbnSlKjPgZrNI4dzb6HIo9wcyX_tQthO8eZIxeCtTMVV7RmzKIBtPtkbZcAMye0KEMGT1lxX8aIWu_qUHy_XX5S8E3dELz5FEpwoamVfrba3Jbm5GGuFzIcvAeHFA7luIP_2Wjp01BYKNm8532NLDvyhrqNjeoZpr3tRA5xVPOR-ioUGotmHxjgVZM9VySYHNAhu62qUpMDyv7D7LiwxF1mf-1wCopujOz2ljvXBHw3VSfaNmKsAZct9RFL_ZjiXZ31Q-9smbGGB-xfclxYeYTgb97XUKFuA9DDPuFfMg8aPLs-IKLGp-C49MBgmmyjqTgR3bNRLtYiWM95UX2Bbfw-IpnZcAPUZ3jgd9_QXlGp_HG7u6jrXSBpaL0YAIOUq0zLgzBL_egDXUKLN6df_kkz9wuX-yFVyNrYCwB5LLQGGgzasnkICkgEv41yXEyUc9SkHTMiCWLdNQ74VVaCpEa8HVWBhDhVMffMoVF6Xh3QDluEAN-CunzoYVHgGy1A6jKI5qI5y17ooByqX0h3plWtliuOkgQ1tGRO9aQyvk77NLJkgQ-5xKDLXMt7P3MTlpCMMtJtAX86KeWDP3_n0WWrJeQDeLj13hUJc7al-JI_leQVgQRp3htzfUI_PrlpTclIKB91rnLMFPFPrQZ8bKfgP-2CqFgQ74ja-IFkLUnNBL7RUCPH2McHnUBjTPz-tyJSGUdcsMwYdTl-kqTw3Eiyl5sehBPYr0Jv8S9WOuN06iMHsiXsEc0krNqlZnIsaxId9y5blOkpCyuDf2XH3tlo9cFG-4Ju4PywpGweNy0NVPShAofpFH89xXL0xZ_GoocRuU32qAkKJq-Vhr-R0VhMxYXcrgbranfsguaHQbsKrSWng_GkP22mVH7yJ0uhk6s8AXQ1DWWOpMd9Zk8-Y0IygWL7zUCDMUYqjUxAwIr__ocANvXg1E17e_IoIdxzz9SwM_1XQXa5dqsIu0xfPxHSw278IKryEvW7T7kHYo5HgRW-rAqmlv33lQ2dhvVxXEibGNutGNgi1r1uRL4vcor-I-1iXyIysbkS_bc-UrJM3lMQgSuxGNVzHYdey_r5s75mBrPBWclfhCCrphnCosNvg4hgmP6jhndMHJYPmH6xTLL1lfp_wEnhyZHioIDpXwlc5iFv5-BvEaoLg3bOGChV0R_1cjrQnK-HuS0HP7ReHj2a5a-SsIfdrXFvFylUBL7eDOTsqgC2HaS6GgrUwvW1_e7O_E3FP1VLrsOD9Kv0WD08Sr9lOC5csG3vc1pDLjbdh3F_u8Eu4vNxU7IAbPqHGmEekOWEhGlbGLqnSiQU_3oIzVdAKV5zMPfXn9OfRiO2owBhED_EK5gdHE9HxVALeN1pjK0hQV4BGuAcrY0ck36PdamEOYcHsjznWLckU_0SOujdXP9iL5Bq4BY45EAaLmnp9BZLoxzE6EVD9OvYBlDu0fGd7uZPOBeqjAGCCvY1byDNX6g-7dS8ajR0-fqxJL3K9VX6qKkvVmt_gv_lfRgBE8onF2bzQA6aaOMwIzc4TCISLT_4uC68q71AKuc0oqM8o3EYnTxObmwuXD65FxbWcsbPNm5CeNQCJ9FlZLmQdFYkxqG5Le6icDS_2JzyIZ3jH9YIHf3C9htq0ffQ_TSc8YQY2HifFp7EGmXB1AXQmbPW3taVgNYNUJTfc_ZlCKEvWIZygXQPtEC4A63Eph4QIkSw6ybJNUJ633EX-LX8eoj18OOmA4ich0kyIst85u6sfE2GorrCueIAAZexIMVOqa8dz1TZDw8gKX2meuMEzggvEmrDOOgoFLoRwfcbFma1aKPSa6dr9vEHS3TM9uMc3wBdBgVE1iQt9dREpcN9QBT6Z55x_q6OX_hlHiNE7fM0ZAt8lo2gVq3Lh51bqo5XY0Z6D6-YBZCi1TGuQ6_40rZwIwiH8fXrS0
+# helpful doc  https://docs.python.org/2/library/os.path.html
+# helpful doc https://stackoverflow.com/questions/72024477/pass-a-generated-data-frame-from-one-function-to-another
+# 240504 try https://www.freecodecamp.org/news/how-to-read-a-file-line-by-line-in-python/#read-method
+#try this next:::# very helpfuk doc https://favtutor.com/blogs/read-file-line-by-line-python
+# python email examples:: https://docs.python.org/3/library/email.examples.html
+#********** Key Piece
+## https://docs.python.org/3/library/email.examples.html
+
+#### To Be DOne
+### Begin command Std_DlgMacroExecuteDirect
+# Gui.SendMsgToActiveView("Run")
+### End command Std_DlgMacroExecuteDirect
+### Begin command Std_Workbench
+# Gui.activateWorkbench("WebWorkbench")
+### End command Std_Workbench
+# Gui.runCommand('Std_Macro_3',0)
+### Begin command Web_BrowserSetURL
+# Gui.SendMsgToActiveView('SetURL')
+### End command Web_BrowserSetURL
+### Begin command Web_BrowserZoomOut
+# Gui.SendMsgToActiveView('ZoomOut')
+### End command Web_BrowserZoomOut
+
+
+
+
+
+import os
+import sys
+import tempfile
+import mimetypes
+import webbrowser
+
+# Import the email modules we'll need
+from email import policy
+from email.parser import BytesParser
+
+
+from PySide.QtGui import *
+
+
+class MyWindow(QWidget):
+
+	def __init__(self):
+		super(MyWindow, self).__init__()
+		App.Console.PrintMessage('class init\n')
+		self.btnLoad = QPushButton("Load EVBot Email")
+		self.btnLoad.clicked.connect(self.btnClickAck)
+		layout = QVBoxLayout()
+		layout.addWidget(self.btnLoad)
+		self.setLayout(layout)
+		self.setWindowFlags(Qt.WindowStaysOnTopHint)		
+		self.show()
+
+
+
+
+
+	def magic_html_parser(self, html_text, partfiles):
+	    """Return safety-sanitized html linked to partfiles.
+
+	    Rewrite the href="cid:...." attributes to point to the filenames in partfiles.
+	    Though not trivial, this should be possible using html.parser.
+	    """
+	    raise NotImplementedError("Add the magic needed")
+
+
+	def trapAbstract(self, nfile) :
+		#App.Console.PrintMessage('top readEmail\n')
+		# In a real program you'd get the filename from the arguments.
+		#with open(nfile, 'rb') as fp:
+		    #msg = BytesParser(policy=policy.default).parse(fp)
+
+		__fn__ =  open(nfile[0],"rb")
+		msg = BytesParser(policy=policy.default).parse(__fn__)
+
+		# Now the header items can be accessed as a dictionary, and any non-ASCII will
+		# be converted to unicode:
+		App.Console.PrintMessage('Start header\n')
+		print('To:', msg['to'])
+		print('From:', msg['from'])
+		print('Subject:', msg['subject'])
+
+		# If we want to print a preview of the message content, we can extract whatever
+		# the least formatted payload is and print the first three lines.  Of course,
+		# if the message has no plain text part printing the first three lines of html
+		# is probably useless, but this is just a conceptual example.
+		simplest = msg.get_body(preferencelist=('plain', 'html'))
+		print()
+		#print(''.join(simplest.get_content().splitlines(keepends=True)[:5]))
+		lstAbstract = ''.join(simplest.get_content().splitlines(keepends=True)[:5])
+		__fn__.close()
+		return lstAbstract
+
+
+	def parseUrl(self, parse_list, lntostart, lntoend, startStr, stopStr):
+		#App.Console.PrintMessage("parseUrl 2103\n\n")
+		#App.Console.PrintMessage(parse_list + "\n\n")
+		ln = lntostart 
+		fnFlag = 0
+		setUrl = ""		#240505 print(*parse_list) #prints the lines when CR \n is =
+		#App.Console.PrintMessage("ln 118: parseUrl: " + f"{ln}     Recevied:::  Start Line: " + f"{lntostart}   End Line: "+ f"{lntoend}    "  + startStr +  "   "+ stopStr + "\n\n")
+		for fnchar in parse_list:
+			if (fnchar == startStr) and (fnFlag == 0): # line with url::= http tag information
+				fnFlag = 1
+				#print("ln 132 found " + startStr + "...ready to start appending to setUrl")
+			elif (fnchar != stopStr) and (fnFlag == 1) :
+				#print("ln 134 append to setUrl     " + f"{fnFlag} + fnFlag")
+				setUrl = setUrl + fnchar
+			elif (fnchar == stopStr) and (fnFlag == 1):
+				#print("ln 136 found " + stopStr + "...stop appending to setUrl\n")
+				fnFlag = 2
+			elif fnFlag == 2:
+				pass #print(fn)
+		App.Console.PrintMessage("\n\n\n ***Begin Cut****\n"  + setUrl +"\n\n*******End Cut*******\n\n\n")
+		#App.Console.PrintMessage("ln 56:  ln: " + f"{ln}    lntostart: "+ f"{lntostart}      lntoend: "+f"{lntoend}")
+		return setUrl
+
+
+
+
+	def btnClickAck(self):
+		setURL = 'http://abbottanp.com'
+		lntostart = 0  
+		lntoend   = 5 # need to monitor EVBot result emails 
+		startStr = '<'
+		stopStr  = '>'
+		#parse_list = []
+		rtnFileName = QFileDialog.getOpenFileName(self, "Open File", "","Email Files (*.eml *.msg)")
+		if (rtnFileName[0]!=""): 
+			App.Console.PrintMessage('rtnFileName[0]!= not empty\n')
+			App.Console.PrintMessage(rtnFileName)
+			App.Console.PrintMessage('\n\n')
+			shrtAbstract = self.trapAbstract(rtnFileName)
+			# print(shrtAbstract) being seen
+			App.Console.PrintMessage(shrtAbstract)
+			App.Console.PrintMessage('\n\n')
+			
+			setUrl       = self.parseUrl(shrtAbstract,lntostart,lntoend, startStr, stopStr)
+			App.Console.PrintMessage(setUrl)
+			App.Console.PrintMessage('\n')
+			
+			#__fn__.close()
+		webbrowser.open_new_tab(setUrl)
+		#WebGui.openBrowser(setUrl)
+# Macro End: /home/tom/.FreeCAD/web_abbottanp.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+app = MyWindow()

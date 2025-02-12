@@ -1,0 +1,137 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2024 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically builds the basic suspension components for 
+#*     supporing the chassis assembly in roll-out ready state (less defined 
+#*     steering system) to use for prototyping the invisioned Abiriba_RG  GM 
+#*     EV vehicle detailed at: 
+#*     https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#* Helpful references:
+#* Flip vector 90: https://limnu.com/sketch-easy-90-degree-rotate-vectors/
+#*      (X, Y, Z) flips 90 using (Z, Y, -X)
+#*     	Base.Vector(0,-TOWER_HEIGHT,0) to (0,0,TOWER_HEIGHT)
+#*  3D rotation https://en.wikipedia.org/wiki/Rotation_matrix
+#*  Topographical scripting https://wiki.freecad.org/Topological_data_scripting
+"""
+This macro is abstracted stepwise from from Example: Pierced box 
+	https://wiki.freecad.org/Topological_data_scripting
+	and merged with 00_990_chassisDimensionPlay_yzPlaneAdjust.FCMacro 
+	derived from LES-Tower.py to fabricate the chassis shape/solid
+
+241127_lu Start of suspension components for the vehicle.  It draws heavily from
+				topoChassisFrame.py.  See that document for details of developemnt
+"""
+
+
+
+
+# remove comment when implemented: from topoChassisToolbox import chassisData, chassisTool
+import pdb, math              # python debugger  see python_gdb.sh for shell script
+import FreeCAD as App
+import Part, math,Draft
+import numpy as np
+from FreeCAD import Base
+
+
+
+
+__title__="Build Front Assembly Suspension SYstem Components of an Exo Cage Vehicle With A Macro"
+__author__ = "Lucca Uzzo"
+__url__ = "http://abbottanp.com"
+
+#testing for trigger for develpment as a .FCMacro rather than .py
+### STEP 1: create, save, close, then invoke/activate new project file
+wrkPrjFile = "_00_856_999_componentYoke"
+wrkShapeObj   = 'Shape'      #Let FreeCAD do the naminging work during building
+# dev wrkPrjFile = "_03_963_chassis_topoScripting_cabin_mainBuild"   # copy Project file "label" from property and replace first character with underscore
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+#end of testing block
+
+
+sf = 126.4 / 5.455   #scale factor: set by desired dimensions, 
+					#	proposed gm_vehilce images and layout of 
+					# 	LEW-Tower.py model
+df = .3              # design factor
+
+def toMM(value):
+	# Convert gawdawful imperial to mm
+	# 126.4 = 5.455 * sf
+	return (value * 25.4 * sf)
+	
+def toMM_pipeDia(value):
+	return (value * 25.4 *sf)  
+
+
+CHASSIS_RUN = toMM(2.65)  # was 5.455  looks good at 3.25..3.80  squared at 4.0
+CHASSIS_AFT_SPAN = toMM(1.05)#toMM(1.209)    #2.65)  #was 1.209
+CHASSIS_BOW_SPAN = toMM(0.8)   #was .919
+
+PIPE_3_5_DIAMETER = toMM_pipeDia(0.114*df*1.5)
+PIPE_3_5_RADIUS = PIPE_3_5_DIAMETER / 2.0
+
+
+
+
+size = CHASSIS_AFT_SPAN 
+poly = Part.makePolygon([(0, 0, 0), (size, 0, 0), (size, 0, size), (0, 0, size), (0, 0, 0)])
+
+face1 = Part.Face(poly)
+face2 = Part.Face(poly)
+face3 = Part.Face(poly)
+face4 = Part.Face(poly)
+face5 = Part.Face(poly)
+face6 = Part.Face(poly)
+     
+myMat = App.Matrix()
+
+myMat.rotateZ(math.pi / 2)
+face2.transformShape(myMat)
+face2.translate(App.Vector(size, 0, 0))
+
+myMat.rotateZ(math.pi / 2)
+face3.transformShape(myMat)
+face3.translate(App.Vector(size, size, 0))
+
+myMat.rotateZ(math.pi / 2)
+face4.transformShape(myMat)
+face4.translate(App.Vector(0, size, 0))
+
+myMat = App.Matrix()
+
+myMat.rotateX(-math.pi / 2)
+face5.transformShape(myMat)
+
+face6.transformShape(myMat)               
+face6.translate(App.Vector(0, 0, size))
+
+myShell = Part.makeShell([face1, face2, face3, face4, face5, face6])   
+mySolid = Part.makeSolid(myShell)
+
+myCyl = Part.makeCylinder(size/3, size *2)
+myCyl.translate(App.Vector(size / 2, size / 2, 0))
+
+cut_part = mySolid.cut(myCyl)
+
+Part.show(cut_part)
+
+
+tube1 = Part.makeCylinder(size/3, size *2)
+tube1.translate(App.Vector(size / 2, size / 2, 0))
+tube2 = Part.makeCylinder(size/3, size *3)
+tube2.translate(App.Vector(size / 2, size / 2, 0))
+tube3 = Part.makeCylinder(size/3, size *1)
+tube3.translate(App.Vector(size / 2, size / 2, 0))
+tube4 = Part.makeCylinder(size/3, size *2.5)
+tube4.translate(App.Vector(size / 2, size / 2, 0))
+
+
+
+
+Part.show (tube1)
+Part.show (tube2)
+Part.show (tube3)
+Part.show (tube4)

@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically builds bspline curvessubassy components in an 
+#*     exploring/spike manner for future use on the roll-out ready chassis assembly
+#*     to use for prototyping the invisioned Abiriba_RG  GM EV vehicle detailed at: 
+#*     https://abbottanp.com/ as HehJayII
+"""
+Helpful References:
+Sketcher Scripting: https://wiki.freecad.org/Sketcher_scripting
+Topological data scripting: https://wiki.freecad.org/Topological_data_scripting
+
+250202_lu Initial session 
+
+
+
+HowTo:
+	1> Decide: 
+	1.1> what imported modules need to be deleted
+	1.2> whether to use the aap_lib toolbox items if not delete
+	2. Change the wrkProjFile to that of the work project file
+	2.1> Rename with "_" replacing leading character
+	2.2> Update the wrkProjFile Readme file
+"""
+
+
+import FreeCAD as App
+import Draft
+import pdb, math              # python debugger  see python_gdb.sh for shell script
+import FreeCAD as App
+import FreeCAD as Gui
+import Part, math,Draft
+import numpy as np
+from FreeCAD import Base
+import aap_lib
+
+__title__="AAP Macro Template"
+__author__ = "Lucca Uzzo"
+__url__ = "http://abbottanp.com"
+
+
+# begin abstract from aapLib_fire1.FCMacro
+from aap_lib import aapfunctions, topoChassisToolbox
+
+chassisTool_Error = 0
+chassisListVar_Error = 0
+chassisShapeOpn_Error = 0
+
+try:
+	wrktool = topoChassisToolbox.chassisTool()
+except Exception:
+	print("chassisTool issue.  wrktool can not be defined")
+	chassisTool_Error = 9
+try:
+    wrkdata = topoChassisToolbox.chassisListVar()
+except Exception:
+    print("chassisListVar issue.  wrkdata can not be defined")
+    chassisListVar_Error = 9
+try:
+    wrkShape= topoChassisToolbox.chassisShapeOpn()
+except Exception:
+    print("chassisShapeOpn issue.  wrkdata can not be defined")
+    chassisShapeOpn_Error = 9
+
+
+wrkPrjFile   = "_00_001_topo_template" #Note "_" underline replacing the first "0" character
+wrkShapeObj   = 'Shape'      #Let FreeCAD do the naminging work during building
+
+
+
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+
+
+
+newObject = App.ActiveDocument.addObject("Part::Feature","FusedFrntAft_Chassis\n")
+newObject.Shape = newShape
+App.ActiveDocument.recompute()
+
+obj = App.getDocument(wrkPrjFile).getObject(wrkShapeObj)  #project file and delected item in tree
+
+
+sf = aapdata.get_SF() 
+someVar = aaptool.toMM(-11,sf)

@@ -1,0 +1,235 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically builds the basic suspension components for 
+#*     supporing the chassis assembly in roll-out ready state (less defined 
+#*     steering system) to use for prototyping the invisioned Abiriba_RG  GM 
+#*     EV vehicle detailed at: 
+#*     https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#* Helpful references:
+#* Flip vector 90: https://limnu.com/sketch-easy-90-degree-rotate-vectors/
+#*      (X, Y, Z) flips 90 using (Z, Y, -X)
+#*     	Base.Vector(0,-TOWER_HEIGHT,0) to (0,0,TOWER_HEIGHT)
+#*  3D rotation https://en.wikipedia.org/wiki/Rotation_matrix
+#*  Topographical scripting https://wiki.freecad.org/Topological_data_scripting
+"""
+This macro is abstracted stepwise from from Example: Pierced box 
+	https://wiki.freecad.org/Topological_data_scripting
+	and merged with 00_990_chassisDimensionPlay_yzPlaneAdjust.FCMacro 
+	derived from LES-Tower.py to fabricate the chassis shape/solid
+
+241221 lu Restart after trng holiday. see wrkPrjFile for detaikls
+			Strategy build good components and move to sketch lines
+
+241127_lu Start of suspension components for the vehicle.  It draws heavily from
+				topoChassisFrame.py.  See that document for details of developemnt
+"""
+
+
+
+
+# remove comment when implemented: from topoChassisToolbox import chassisData, chassisTool
+import pdb, math              # python debugger  see python_gdb.sh for shell script
+import FreeCAD as App
+import Part, math,Draft
+import numpy as np
+from FreeCAD import Base
+import aap_lib
+
+
+
+
+__title__="Build Front Assembly Suspension SYstem Components of an Exo Cage Vehicle With A Macro"
+__author__ = "Lucca Uzzo"
+__url__ = "http://abbottanp.com"
+
+# begin abstract from aapLib_fire1.FCMacro
+from aap_lib import aapfunctions, topoChassisToolbox
+
+chassisTool_Error = 0
+chassisListVar_Error = 0
+chassisShapeOpn_Error = 0
+
+try:
+	wrktool = topoChassisToolbox.chassisTool()
+except Exception:
+	print("chassisTool issue.  wrktool can not be defined")
+	chassisTool_Error = 9
+try:
+    wrkdata = topoChassisToolbox.chassisListVar()
+except Exception:
+    print("chassisListVar issue.  wrkdata can not be defined")
+    chassisListVar_Error = 9
+try:
+    wrkShape= topoChassisToolbox.chassisShapeOpn()
+except Exception:
+    print("chassisShapeOpn issue.  wrkdata can not be defined")
+    chassisShapeOpn_Error = 9
+
+
+#testing for trigger for develpment as a .FCMacro rather than .py
+### STEP 1: create, save, close, then invoke/activate new project file
+#wrkPrjFile ="spike_001"  #241220_lu"_00_998_a994_controlArmLowerFrntPort_bushings_topo_00_007"
+wrkPrjFile   = "_00_998_a992_controlArmLowerFrntPort_bushings_topo_00_007"
+wrkShapeObj   = 'Shape'      #Let FreeCAD do the naminging work during building
+# dev wrkPrjFile = "_03_963_chassis_topoScripting_cabin_mainBuild"   # copy Project file "label" from property and replace first character with underscore
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+#end of testing block
+
+
+sf = aapdata.get_SF()   #scale factor: set by desired dimensions, 
+					#	proposed gm_vehilce images and layout of 
+					# 	LEW-Tower.py model
+df = .3              # design factor
+dfslf = 1.00         # Swag based on 057 view of vehicle + 000_799
+dfcbfca = .5			# Swag based for cross members of control arm
+
+
+CHASSIS_RUN = aaptool.toMM(2.65,sf)  # was 5.455  looks good at 3.25..3.80  squared at 4.0
+CHASSIS_AFT_SPAN = aaptool.toMM(1.05,sf)#toMM(1.209)    #2.65)  #was 1.209
+CHASSIS_BOW_SPAN = aaptool.toMM(0.8,sf)   #was .919
+
+PIPE_SUSPEN_ControARMDIAMETER = aap.toMM_pipeDia(0.114*df*1.5,sf)
+PIPE_SUSPEN_ControARMRADIUS = PIPE_SUSPEN_ControARMDIAMETER / 2.0
+
+
+FRNT_CONTROLARM_UPPER = 40
+FRNT_CONTROLARM_LOWER = 41
+
+REAR_CONTROLARM_UPPER = 60
+REAR_CONTROLARM_LOWER = 61
+
+
+CONTROLARM_DROP = aaptool.toMM(-11,sf)#-CHASSIS_AFT_DEPTH or distance between upper/lower control arms
+CONTROLARM_MOVE = aaptool.toMM(-.085,sf)  # by trial and error centering on xa,ya,za
+
+"""
+Derived from 000_998_a992_controlArmLowerFrntPort_bushings_topo_00_007
+SketchControlArm FrontLowerStarboard
+(0,0,0)               #Vertex1'
+(762,-229.001,0)     #Vertex2',
+(640.08,150.991,0)   #Vertex3',
+(127,29.9586,0)      #Vertex4'
+(127,-38.1668,0)     #Vertex5'
+(457.2,107.851,0)    #Vertex6',
+(457.2,-137.401,0)   #Vertex7',
+(203.2,47.9338,0)    #Vertex8',
+(203.2,-61.0669,0)   #Vertex9',
+
+"""
+"""
+hold for test
+ptsPortFrntSuspensionLower = [  # ndx ?* where * indicates start for shape
+App.Vector(0,0,0),              # ndx 0* Sketch Vertex 1    Shape.1
+App.Vector(0,762,-229.001),     # ndx 1 Sketch001.Vertex2  Shape.2
+App.Vector(0,0,0),              # ndx 2*** Sketch Vertex 1    Shape1.1 
+App.Vector(0,640.08,150.991),   # ndx 3 Sketch001.Vertex3   Shape1.2
+App.Vector(0,0,0),              # ndx 4 Sketch001.Vertex4  Shape2.1
+App.Vector(0,127,-38.1668),     # ndx 5 Sketch001.Vertex5    Shape2.2
+App.Vector(0,0,0),              # ndx 6* Sketch.001.Vertex6  Shape3.1
+App.Vector(0,457.2,-137.401) ,  # ndx 7 Sketch001.Vertex7    Shape3.2
+App.Vector(0,0,0),              # ndx 8* Sketch.001.Vertex8 Shape4.1
+App.Vector(0,203.2,-61.0669)]   # ndx 9 Sketch001.Vertex9    Shape4.2
+"""
+
+ptsPortFrntSuspensionLower = [  # ndx ?* where * indicates start for shape
+App.Vector(0,0,0),              # ndx 0* Sketch Vertex 1    Shape.1
+App.Vector(0,762,0),     # ndx 1 Sketch001.Vertex2  Shape.2
+App.Vector(0,0,0),              # ndx 2*** Sketch Vertex 1    Shape1.1 
+App.Vector(0,640.08,0),   # ndx 3 Sketch001.Vertex3   Shape1.2
+App.Vector(0,0,0),              # ndx 4 Sketch001.Vertex4  Shape2.1
+App.Vector(0,127*dfcbfca,0),     # ndx 5 Sketch001.Vertex5    Shape2.2
+App.Vector(0,0,0),              # ndx 6* Sketch.001.Vertex6  Shape3.1
+App.Vector(0,457.2*dfcbfca,0) ,  # ndx 7 Sketch001.Vertex7    Shape3.2
+App.Vector(0,0,0),              # ndx 8* Sketch.001.Vertex8 Shape4.1
+App.Vector(0,203.2*dfcbfca, 0)]   # ndx 9 Sketch001.Vertex9    Shape4.2
+  
+
+class ControlArmMgr(object):   #no longer child of ChassisLeg
+#class ChassisArch(object):   #no longer child of ChassisLeg	# def setupArchHndlr(pts, subChassisID):
+	def __init__(self, pts, subChassisID):  #xa, ya, za, xb, yb, zb, subChassisID):
+		rtnMessage = "Nobody Home\n"
+		if subChassisID == FRNT_CONTROLARM_UPPER:
+			self.fabControlArm(ptsPortFrntSuspensionUpper)
+		if subChassisID == FRNT_CONTROLARM_LOWER:
+			self.fabControlArm(ptsPortFrntSuspensionLower)
+		if subChassisID == REAR_CONTROLARM_UPPER:
+			self.fabControlArm(ptsPortRearSuspensionUpper)
+		if subChassisID == REAR_CONTROLARM_LOWER:
+			self.fabControlArm(ptsPortRearSuspensionLower)
+		rtnMessage = "\ndone\n"
+		#App.getDocument(wrkPrjFile).recompute()
+		App.Console.PrintMessage(rtnMessage)
+
+
+	def fabControlArm(self,pts4Wrk):
+		#See Example3 of spike 005_999_spline_pipe.FCStd 
+		#	and Macro 005_999_buildsplinePipe.FCMacro
+		np_Arr   = np.array(pts4Wrk)  #vLoc
+		#241126_lu  do not need spline1 = Draft.make_bspline(pts4Wrk, closed=False)
+		#Last point for circle shape point 14 (-394.089,1425.48,-212.338)
+		#	occurs at len(ptsStarboard)-1	
+		#load from 0: loopNdx = 0  #one fewer than number of elments lin pts list
+		ShapePairNdx = 0 #4   #one fewer than number of elments lin pts list
+		ShapeQty = 5 #7 #number of shapes beginning with 0rows of in array
+		#while loopNdx > 0: # len(ptsStarboard)-1:
+		for ShapePairNdx in range(ShapeQty):
+		#load from 0: while loopNdx < len(ptsStarboard)-1:
+			zAngle = 90 #270
+			if ShapePairNdx == 0:
+				startArrayNdx = 0	# look for arry index pointer to first vertex
+				#zAngle += 105				# of cylinder to build Vertex1 and Vertex2
+			if ShapePairNdx == 1:
+				startArrayNdx = 2 # was1	# Vertex2 to Vertex3
+			if ShapePairNdx == 2:
+				startArrayNdx = 4	#Vertex 4 to Vertex 5
+			if ShapePairNdx == 3:
+				startArrayNdx = 6	#Vertex 5 to Vertex
+			if ShapePairNdx == 4:
+				startArrayNdx = 8	#Vertex 6 to Vertex7
+			pntNdx     = startArrayNdx
+			wrkArrNa   = np_Arr[pntNdx]
+			xa         = wrkArrNa[0]		#yields the x-axis vector component of bow 2d cross-section	 
+			ya         = wrkArrNa[1]		#yields the sections length from aft to bow
+			za         = wrkArrNa[2]	
+			wrkArrNb   = np_Arr[pntNdx+1]# jump to next row in the array
+			xb         = wrkArrNb[0]		#yields the x-axis vector component of bow 2d cross-section	 
+			yb         = wrkArrNb[1]		#yields the sections length from aft to bow
+			zb         = wrkArrNb[2]	
+			App.Console.PrintMessage("wrkArrNa:: xa,ya, za\n")
+			App.Console.PrintMessage(wrkArrNa)
+			App.Console.PrintMessage("\n")
+			# erase swarf
+			cylinderLength = aaptool.distance4vector(xa, ya, za, xb, yb, zb)
+			self._tube = Part.makeCylinder(PIPE_SUSPEN_ControARMRADIUS,cylinderLength)
+			self._tube.translate(App.Vector(xa, ya, 0))
+			##self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1, 1, 0), targetAngle)
+
+			#App.Console.PrintMessage('Check for Port/Starboard required placement\n')
+			self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1,0, 0, ), zAngle)
+			Part.show(self._tube)
+			#self._tube = super().__init__(xa,ya, za, xbe, ybe, zbe, CHASSIS_CABIN_STARBOARD)
+			#use with while loopNdx -= 1
+
+
+def controlArmSection():
+	App.Console.PrintMessage("CONTROLARM_DROP")
+	App.Console.PrintMessage(CONTROLARM_DROP)
+	App.Console.PrintMessage("\n")
+	arch40Lower = ControlArmMgr(ptsPortFrntSuspensionLower, FRNT_CONTROLARM_LOWER)
+#	arch40Upper = ControlArmMgr(ptsPortFrntSuspensionUpper, FRNT_CONTROLARM_Upper)
+#	arch60Upper = ControlArmMgr(ptsPortRearSuspensionUpper, REAR_CONTROLARM_UPPER)
+#	arch60Lower = ControlArmMgr(ptsPortRearSuspensionLower, REAR_CONTROLARM_LOWER)
+
+
+
+#UpperStrutMount()
+#Coil_Spring()
+#Strut_Assembly()
+#controlArm_Bushing()
+controlArmSection()
+#BallJoints()

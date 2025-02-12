@@ -1,0 +1,117 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*
+#* This program module provides test support for utilities and common declarations 
+#*      aap_lib tools ftom topoCHASSISToolbox.py used 
+#* 		by various other macro modules related directly to the development of the 
+#*		the basic chassis components exo cage in roll-out ready state (less defined 
+#*		steering and suspension system) to use for prototyping the invisioned 
+#*		Abiriba_RG  GM EV vehicle detailed at: 
+#*		https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#*		
+"""
+250119_lu tested post tweaks to topoChassisCabin.py and topoChassisFrame.py
+         without issue.  
+250117_lu  working with aap_libworking_250117_1653
+250106_lu started the process of aap_library development via 
+		https://medium.com/analytics-vidhya/how-to-create-a-python-library-7d5aea80cc3f
+		The development process was addapted directly from Kia Eisinga
+		excellent example.
+"""
+
+import FreeCAD as App
+import Draft
+import pdb, math              # python debugger  see python_gdb.sh for shell script
+import FreeCAD as App
+import FreeCAD as Gui
+import Part, math,Draft
+import numpy as np
+from FreeCAD import Base
+import WebGui      # 250208_lu Error <class 'ModuleNotFoundError'>: No module named 'WebGui'
+import aap_lib
+
+
+import aap_lib
+from aap_lib import aapfunctions, topoChassisToolbox
+
+chassisTool_Error = 0
+chassisListVar_Error = 0
+
+try:
+	wrktool = topoChassisToolbox.chassisTool()
+except Exception:
+	print("chassisTool issue.  wrktool can not be defined")
+	chassisTool_Error = 9
+try:
+    wrkdata = topoChassisToolbox.chassisListVar()
+except Exception:
+    print("chassisListVar issue.  wrkdata can not be defined")
+    chassisListVar_Error = 9
+#wrkShape= topoChassisToolbox.chassisShapeOpn()
+
+if chassisTool_Error == 0:
+	print('\nAssert: 576.66258....\n')
+	print(aapfunctions.haversine(4.895168, 52.370216, 13.404954, 52.520008))
+
+	print('\nAssert: 25.4\n')
+	print(wrktool.toMM(1))
+	print('\nAssert: 3048.0\n')
+	print(wrktool.toMM(120))
+
+	print('\nAssert: 12.7\n')
+	print(wrktool.toMM(1,.5))
+	print('\nAssert: 4572.0\n')
+	print(wrktool.toMM(120,1.5))
+
+	print('\nAssert: 25.4\n')
+	print(wrktool.toMM(1,.5, 2))
+	print('\nAssert: 1143.0\n')
+	print(wrktool.toMM(120,1.5, .25))
+
+	print('\nAssert: 25.4\n')
+	print(wrktool.toMM_pipeDia(1))
+	print('\nAssert: 4572.0\n')
+	print(wrktool.toMM_pipeDia(120,1.5))
+else:
+	print("chassisTool has at least one error.  Contact AAP")	
+
+
+if chassisListVar_Error == 0:
+    print('\nAssert: 23.17140..SF.\n')
+    print(wrkdata.get_SF())
+#    print('\nAssert: 6    protected_var\n')
+#    print(wrkdata.get_protected_var())
+    print('\nAssert: 2.895..... 3-5 Dia Pipe..\n'	)
+    print(wrkdata.get_PIPE_3_5_DIAMETER())
+    print('\nAssert: 1.4478..... 3-5 Rad Pipe..\n'	)
+    print(wrkdata.get_PIPE_3_5_RADIUS())
+    print(wrkdata.get_PIPE_2_5_DIAMETER())
+    print(wrkdata.get_PIPE_2_5_RADIUS())
+    print(wrkdata.get_prnFLAGoneVector())
+    print(wrkdata.get_prnFLAG4Vectors())
+    print(wrkdata.get_Z1())
+    print(wrkdata.get_X1())
+    print(wrkdata.get_Y1())
+    print(wrkdata.get_ZMID())
+    print(wrkdata.get_XMID())
+    print(wrkdata.get_YMID())
+    print(wrkdata.get_lenFrntFactor())
+    print(wrkdata.get_lenBakFactor())
+    print(wrkdata.get_rearTapperFactor())
+    print(wrkdata.get_CHASSIS_RUN())
+    print(wrkdata.get_CHASSIS_AFT_RUN())
+    print(wrkdata.get_CHASSIS_AFT_SPAN())
+    print(wrkdata.get_CHASSIS_AFT_DEPTH())
+    print(wrkdata.get_CHASSIS_BOW_SPAN())
+    print(wrkdata.get_CHASSIS_BOW_DEPTH())
+    print(wrkdata.get_CHASSIS_RR_RUN())
+    print(wrkdata.get_CHASSIS_MID_SPAN())
+    print(wrkdata.get_CHASSIS_MID_DEPTH())
+    print(wrkdata.get_RELIEF())
+    print(wrkdata.get_CHASSIS_RR_SPAN())
+    print(wrkdata.get_CHASSIS_RR_DEPTH())
+    print('Catalog of variables completed')
+
+else:
+    print("chassisListVar has at least one error.  Contact AAP")
