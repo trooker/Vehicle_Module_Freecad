@@ -2,8 +2,8 @@
 
 The Vehicle_Module_FreeCAD/freecad Project is composed of the following:
 
-1> <gm_vehicle> A FreeCAD GM Vehicle Workbench suitable for designing ground modbile vehicles.
+1> <gm_vehicle folder>: A FreeCAD GM Vehicle Workbench suitable for designing ground modbile vehicles.
 
-2> A collection FreeCAD macros specifically developed to support the GM Vehicle Workbench design activity.
+2> <vehicle_design_macros>: A collection FreeCAD macros specifically developed to support the GM Vehicle Workbench design activity.
 
-3> At least one GM Vehicle example mature to the "virtual rollout" level.
+3> <HehJayII>: At least one GM Vehicle example mature to the "virtual rollout" level.
