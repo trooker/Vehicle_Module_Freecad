@@ -1,0 +1,211 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2024 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically builds the basic suspension Shock Absorbor component for 
+#*     supporing the chassis assembly in roll-out ready state (less defined 
+#*     steering system) to use for prototyping the invisioned Abiriba_RG  GM 
+#*     EV vehicle detailed at: 
+#*     https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#* Helpful references:
+#* Flip vector 90: https://limnu.com/sketch-easy-90-degree-rotate-vectors/
+#*      (X, Y, Z) flips 90 using (Z, Y, -X)
+#*     	Base.Vector(0,-TOWER_HEIGHT,0) to (0,0,TOWER_HEIGHT)
+#*  3D rotation https://en.wikipedia.org/wiki/Rotation_matrix
+#*  Topographical scripting https://wiki.freecad.org/Topological_data_scripting
+"""
+This macro is abstracted stepwise from from Example: Pierced box 
+	https://wiki.freecad.org/Topological_data_scripting
+	and merged with 00_990_chassisDimensionPlay_yzPlaneAdjust.FCMacro 
+	derived from LES-Tower.py to fabricate the chassis shape/solid
+
+241127_lu Start of suspension components for the vehicle.  It draws heavily from
+				topoChassisFrame.py.  See that document for details of developemnt
+"""
+
+
+
+
+import FreeCAD as App
+import Part, math
+import pdb, math              # python debugger  see python_gdb.sh for shell script
+import Part, math,Draft
+import numpy as np
+from FreeCAD import Base
+
+
+
+
+__title__="Build Front Assembly Suspension SYstem Components of an Exo Cage Vehicle With A Macro"
+__author__ = "Lucca Uzzo"
+__url__ = "http://abbottanp.com"
+
+#testing for trigger for develpment as a .FCMacro rather than .py
+### STEP 1: create, save, close, then invoke/activate new project file
+             
+wrkPrjFile = "_00_780_999_suspensionShock"
+wrkShapeObj   = 'Shape'      #Let FreeCAD do the naminging work during building
+# dev wrkPrjFile = "_03_963_chassis_topoScripting_cabin_mainBuild"   # copy Project file "label" from property and replace first character with underscore
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+#end of testing block
+
+
+sf = 1 #126.4 / 5.455   #scale factor
+
+def toMM(value):
+	# Convert gawdawful imperial to mm
+	# 126.4 = 5.455 * sf
+
+	return (value * 25.4 * sf)
+
+CHASSIS_RUN = toMM(2.65)  # was 5.455  looks good at 3.25..3.80  squared at 4.0
+CHASSIS_AFT_SPAN = toMM(1.05)#toMM(1.209)    #2.65)  #was 1.209
+CHASSIS_BOW_SPAN = toMM(0.8)   #was .919
+
+
+FORCE_OPN			 = 40
+"""not used
+FRNT_CONTROLARM_UPPER = 40
+FRNT_CONTROLARM_LOWER = 41
+REAR_CONTROLARM_UPPER = 60
+REAR_CONTROLARM_LOWER = 61
+"""
+"""
+pts4Opn = [  	
+App.Vector(0,0,0),					 # ndx ?* where * indicates start for shape
+App.Vector(0,.5,22),     				 #ndx 0 Sketch.Vertex1	 Shape0.1
+App.Vector(0,0,0),
+App.Vector(0,1.5, 10)]    #ndx 1 Sketch.Vertex2	 Shape0.2]      #ndx 5 Sketch.Vertex4	 Shape2.2
+"""
+
+"""
+pts4Opn = [  						 # ndx ?* where * indicates start for shape
+App.Vector(0,7.5,8),     				 #ndx 0 Sketch.Vertex1	 Shape0.1
+App.Vector(0,20,10)]    #ndx 1 Sketch.Vertex2	 Shape0.2]      #ndx 5 Sketch.Vertex4	 Shape2.2
+"""
+
+pts4Opn = [  	
+App.Vector(0,1.5, 10),     #ndx 0 Sketch.Vertex1	 Shape0.1
+App.Vector(0,.5,22)]    #ndx 1 Sketch.Vertex2	 Shape0.2]      #ndx 5 Sketch.Vertex4	 Shape2.2
+
+
+
+class OpnMgr(object):   #no longer child of ChassisLeg
+#class ChassisArch(object):   #no longer child of ChassisLeg	# def setupArchHndlr(pts, subChassisID):
+	def __init__(self, pts, subChassisID):  #xa, ya, za, xb, yb, zb, subChassisID):
+		rtnMessage = "Nobody Home\n"
+		if subChassisID == FORCE_OPN:
+			self.fabComponent(pts4Opn)
+		'''not used 
+		if subChassisID == FRNT_CONTROLARM_UPPER:
+			self.fabControlArm(ptsPortFrntSuspensionUpper)
+		if subChassisID == FRNT_CONTROLARM_LOWER:
+			self.fabControlArm(ptsPortFrntSuspensionLower)
+		if subChassisID == REAR_CONTROLARM_UPPER:
+			self.fabControlArm(ptsPortRearSuspensionUpper)
+		if subChassisID == REAR_CONTROLARM_LOWER:
+			self.fabControlArm(ptsPortRearSuspensionLower)
+		'''
+		rtnMessage = "\ndone\n"
+		#App.getDocument(wrkPrjFile).recompute()
+		App.Console.PrintMessage(rtnMessage)
+
+
+	def fabComponent(self,pts4Wrk):
+		#See Example3 of spike 005_999_spline_pipe.FCStd 
+		#	and Macro 005_999_buildsplinePipe.FCMacro
+		np_Arr   = np.array(pts4Wrk)  #vLoc
+		#load from 0: loopNdx = 0  
+		ShapePairNdx = 0 #ndx for first Vertex1 of four vertex shape
+		ShapeQty = 2 #3 #2 #7 #number of shapes beginning with 0 
+		for ShapePairNdx in range(ShapeQty):
+			opnAngle     = 90 #270
+			if ShapePairNdx == 0:
+				startArrayNdx = 0	# look for arry index pointer to first vertex
+				opnAngle     += 0				# of cylinder to build Vertex1 and Vertex2
+			if ShapePairNdx == 1:
+				startArrayNdx = 1 # was1	# Vertex2 to Vertex3
+				opnAngle     += 0
+			#if ShapePairNdx == 2:
+			#	startArrayNdx = 4	#Vertex 3 to Vertex 4
+			#	opnAngle     += 0
+			#if ShapePairNdx == 3:
+			#	startArrayNdx = 6	#Vertex 5 to Vertex
+			#	opnAngle     += 0
+			pntNdx     = startArrayNdx
+			wrkArrNa   = np_Arr[pntNdx]
+			xa         = wrkArrNa[0]		#yields the x-axis vector component of bow 2d cross-section	 
+			ya         = wrkArrNa[1]		#yields the sections length from aft to bow
+			za         = wrkArrNa[2]	
+			#wrkArrNb   = np_Arr[pntNdx+1]# jump to next row in the array
+			#xb         = wrkArrNb[0]		#yields the x-axis vector component of bow 2d cross-section	 
+			#yb         = wrkArrNb[1]		#yields the sections length from aft to bow
+			#zb         = wrkArrNb[2]	
+			App.Console.PrintMessage("wrkArrNa:: xa,ya, za\n")
+			App.Console.PrintMessage(wrkArrNa)
+			App.Console.PrintMessage("\n")
+			# erase swarf
+			circle     = Part.makeCircle(toMM(ya))
+			wire       = Part.Wire(circle)
+			disk       = Part.Face(wire)
+			self._tube = disk.extrude(App.Vector(0, 0,toMM(za)))
+			
+			#self._tube = Part.makeCylinder(PIPE_SUSPEN_ControARMRADIUS,cylinderLength)
+
+			#self._tube.translate(App.Vector(xa, ya, 0))
+			##self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1, 1, 0), targetAngle)
+
+			#App.Console.PrintMessage('Check for Port/Starboard required placement\n')
+			
+			if ShapePairNdx == 0:
+				self._tube.translate(App.Vector(0, 0, toMM(za)*1.5)) 
+				##self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1,0, 0 ), opnAngle     )
+				#self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1,0, 0 ), opnAngle     )
+			"""
+			if ShapePairNdx == 1:
+			#	self._tube.rotate(App.Vector(xa, ya, za),App.Vector(0,0, 1), opnAngle     )
+				self._tube.translate(App.Vector(0, 0, za+zb))
+			#	##opnAngle     = -90
+				self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1,0, 0), opnAngle     )
+			"""
+			#if ShapePairNdx == 2:
+			#	self._tube.translate(App.Vector(-xa, 0, zb))
+			#	opnAngle = 45
+			#	self._tube.rotate(App.Vector(xa, ya, za),App.Vector(0,1, 0 ), opnAngle     )
+			#	self._tube.translate(App.Vector(35, 0, -90))
+			#if ShapePairNdx == 3:
+			#	self._tube.rotate(App.Vector(xa, ya, za),App.Vector(1,0, 0 ), opnAngle     )
+			
+			Part.show(self._tube)
+			#self._tube = super().__init__(xa,ya, za, xbe, ybe, zbe, CHASSIS_CABIN_STARBOARD)
+			#use with while loopNdx -= 1
+
+			
+	#https://stackoverflow.com/questions/20184992/finding-3d-distances-using-an-inbuilt-function-in-python
+	def distance(self, x1, y1, z1, x2, y2, z2):
+		e = 0.0
+		euclidDis = math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
+		return euclidDis
+			
+
+def shockAbsorbor():
+	arch40Assign = OpnMgr(pts4Opn, FORCE_OPN)	
+#	arch40Lower = ControlArmMgr(ptsPortFrntSuspensionLower, FRNT_CONTROLARM_LOWER)
+#	arch40Upper = ControlArmMgr(ptsPortFrntSuspensionUpper, FRNT_CONTROLARM_UPPER)
+#	arch60Upper = ControlArmMgr(ptsPortRearSuspensionUpper, REAR_CONTROLARM_UPPER)
+#	arch60Lower = ControlArmMgr(ptsPortRearSuspensionLower, REAR_CONTROLARM_LOWER)
+
+
+
+#UpperStrutMount()
+#Coil_Spring()
+#Strut_Assembly()
+#controlArm_Bushing()
+#controlArmSection()
+#yokeOpnSection()
+#BallJoints()
+#tirewheelHub()
+shockAbsorbor()

@@ -1,0 +1,83 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program documents the Bill of Materials for creating a virtual
+#*     the virtual roll-out ready chassis assembly to use for 
+#*     prototyping the invisioned Abiriba_RG  GM EV vehicle 
+#*     detailed at: 
+#*     https://abbottanp.com/ as HehJayII
+"""
+250208_lu Update latest complete assembly 000_799_988_assembleBasicChassis_rollout_virtual.FCStd
+			and 057_aap_994_gm_vehicle_HehJay-Nomad
+250131_lu Initial BOM
+"""
+
+1> Start with the Bill of Material shown directly below.  
+2> Each artifacts clearly states what the primary work-object-file is
+	as wheel as various imports
+3> The three digit number following "topoChassis" serves to order the 
+	BOM build process 
+4> Additional three digit numbers represent revisions.  Most of the time 
+	the lowest such three digit yields the most mature.  A good example 
+	this does not apply is 000_799_992_assembleBasicChassis_SuspensionWIP.
+	This artifact represnets a spike taking a look at suspension. This 
+	specific poor example was renamed 000_798_99_assembleBasicChassis_SuspensionWIP
+5>The most mature is 000_799_993_assembleBasicChassis_SuspensionSketchConFined
+	once again is at the top of the list.
+
+
+
+
+
+Bill of Material for Fabricating Virtual GM_Vehcile
+Latest Project File Assembly
+057_aap_994_gm_vehicle_HehJay-Nomad
+Latest Complete Assembly
+000_799_988_assembleBasicChassis_rollout_virtual.FCStd
+000_799_989_assembleBasicChassis_rollout_virtual.FCStd  Parent of Latest
+provides the parts and assembly of the virtual model
+
+
+The topographical bundle used to virtually fabricate the latest assembly 
+is given sequentially:
+topoChassis_001_strutBuildGM_vehicle_996FrntChassis_Part.FCMacro
+topoChassis_002_strutBuildGM_vehicle_999_RearChassis_Part.FCMacro
+topoChassis_003_strutBuildGM_vehicle_999_CabinChassis_Part.FCMacro
+topoChassis_004_assembleGM_vehicle_999_frontChassis_subAssy.FCMacro
+topoChassis_005_assembleGM_vehicle_999_rearChassis_subAssy.FCMacro
+topoChassis_006_assembleGM_vehicle_999_cabinChassis_subAssy.FCMacro
+topoChassis_007_assembleGM_vehicle_999_basicChassis_assy.FCMacro
+topoChassis_008_assemble_shockAbsorbor_Brace_subAssy.FCMacro
+
+
+
+Low level chassis component fabrication macros
+topoChassisCabin.py
+topoChassisFrame.py
+
+
+Helpful macros
+topoDownLd_003_getVertex.py for capturing coordinates of sketch vertexs.
+
+
+aap_lib <<Active/Current Python library for Abbottanp>>
+	dirlist4aap_lib
+	__init__.py	
+	topoChassisToolbox.py
+
+aap_Library <<Development Environment>>
+	drwxrwxr-x 2 ... aap_lib
+	drwxrwxr-x 2 ... aap_lib.egg-info
+	drwxrwxr-x 4 ... build
+	-rw-rw-r-- 1 ... dirList
+	drwxrwxr-x 4 ... dist
+	-rw-rw-r-- 1 ... READ.me	
+	-rw-rw-r-- 1 ... setup.py
+	drwxrwxr-x 3 ... tests
+	drwxrwxr-x 5 ... venv
+
+
+
+

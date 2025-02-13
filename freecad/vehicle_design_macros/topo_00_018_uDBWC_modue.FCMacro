@@ -1,0 +1,112 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically builds the Umbilical Drive By Wire Controler used 
+#*     used by a memeber of crew Abiriba_RG  GM EV vehicle detailed at: 
+#*     https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#* Helpful references:
+#*  Topographical scripting https://wiki.freecad.org/Topological_data_scripting
+"""
+250203_lu Adjust length of shaft_part and position of ball joint
+250128_lu Inital inputs.  
+			The Topographical scripting "Example: PeicedBox" was copied and adjusted to start
+			the UDBWC.
+			
+Helpful values
+radius of golf ball .84 in
+radius of baseball  1.43
+"""
+import pdb, math              # python debugger  see python_gdb.sh for shell script
+import FreeCAD as App
+import Part, math,Draft
+import numpy as np
+from FreeCAD import Base
+import aap_lib
+
+__title__="Fuse the Front Chassis Components into A Part/Clone With A Macro"
+__author__ = "Lucca Uzzo"
+__url__ = "http://abbottanp.com"
+
+
+# begin abstract from aapLib_fire1.FCMacro
+from aap_lib import aapfunctions, topoChassisToolbox
+
+chassisTool_Error = 0
+chassisListVar_Error = 0
+chassisShapeOpn_Error = 0
+
+try:
+	wrktool = topoChassisToolbox.chassisTool()
+except Exception:
+	print("chassisTool issue.  wrktool can not be defined")
+	chassisTool_Error = 9
+try:
+    wrkdata = topoChassisToolbox.chassisListVar()
+except Exception:
+    print("chassisListVar issue.  wrkdata can not be defined")
+    chassisListVar_Error = 9
+try:
+    wrkShape= topoChassisToolbox.chassisShapeOpn()
+except Exception:
+    print("chassisShapeOpn issue.  wrkdata can not be defined")
+    chassisShapeOpn_Error = 9
+
+wrkPrjFile = "_00_760_999_uDBWC_module"  
+wrkShapeObj   = 'Shape'      #Let FreeCAD do the naminging work during building
+
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+
+
+SF = wrkdata.get_SF()
+
+
+size = wrktool.toMM(4)
+poly = Part.makePolygon([(0, 0, 0), (size, 0, 0), (size, 0, size), (0, 0, size), (0, 0, 0)])
+
+face1 = Part.Face(poly)
+face2 = Part.Face(poly)
+face3 = Part.Face(poly)
+face4 = Part.Face(poly)
+face5 = Part.Face(poly)
+face6 = Part.Face(poly)
+     
+myMat = App.Matrix()
+
+myMat.rotateZ(math.pi / 2)
+face2.transformShape(myMat)
+face2.translate(App.Vector(size, 0, 0))
+
+myMat.rotateZ(math.pi / 2)
+face3.transformShape(myMat)
+face3.translate(App.Vector(size, size, 0))
+
+myMat.rotateZ(math.pi / 2)
+face4.transformShape(myMat)
+face4.translate(App.Vector(0, size, 0))
+
+myMat = App.Matrix()
+
+myMat.rotateX(-math.pi / 2)
+face5.transformShape(myMat)
+
+face6.transformShape(myMat)               
+face6.translate(App.Vector(0, 0, size))
+
+myShell = Part.makeShell([face1, face2, face3, face4, face5, face6])   
+mySolid = Part.makeSolid(myShell)
+
+myCyl1 = Part.makeCylinder(wrktool.toMM(1.25), wrktool.toMM(10))  #was 15
+myCyl1.translate(App.Vector(size / 2, size / 2, 0))
+
+shaft_part = mySolid.fuse(myCyl1)
+Part.show(shaft_part)
+
+ball = Part.makeSphere(wrktool.toMM(2))
+ball.translate(App.Vector(size / 2, size / 2, 2 * size + wrktool.toMM(2))) #was 5
+column = shaft_part.fuse(ball)
+
+Part.show(column)

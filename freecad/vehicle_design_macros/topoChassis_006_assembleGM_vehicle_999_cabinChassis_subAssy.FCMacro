@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2024 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically assembles a chassis entity in exo cage in roll-out 
+#*     ready state (less defined steering and suspension system) to use for 
+#*     prototyping the invisioned Abiriba_RG  GM EV vehicle 
+#*     detailed at: https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#*Helpful Sites:
+#*  Topographical scripting https://wiki.freecad.org/Topological_data_scripting
+#*	Fuse/Union of Selected components
+#*	  https://forum.freecad.org/viewtopic.php?t=4137 Re: Fuse multiple parts in 
+#*		python macro fails Post by wmayer » Mon Jun 10, 2013 with AAP adjustments
+#*	Part Rotation:  Re: how to rotate an object (placement) by yorik 02/06/2012  
+#*		https://forum.freecad.org/viewtopic.php?style=5&t=2213
+#*		Alternately used LES_Tower style rotation used in topoChassisFrame.py line 204
+#*		as seen Ln 204 	#circle.rotate(App.Vector(0, 0, 0),App.Vector(0, 0, 1), 90)
+#*		and modified for FrontChassis rotate of 7.5 degrees about X-axis not Z-Axis
+#*
+#* Change History
+"""
+241020_lu Assemble the Cabin Chassis Section and rotate
+"""
+
+#**	Tricks of Trade:
+#*
+#***	Things That Go Bump In The Night
+
+
+import FreeCAD as App
+import a2p_importpart
+
+wrkA2PlusPrjFile    = "_00_869_spike_assembleCabinChassis"   #* separate spike not necessarily for production
+wrkImportFile = "_00_000_969_spike_assembleStruts4CabinChassis"  #Rear Chassis Section with MID + RR
+wrkObjectCabinChassis = 'b_000_969_spike_assembleStruts4CabinChassis_001_' #assumes first subassy need to rotate/move
+
+
+
+App.setActiveDocument(wrkA2PlusPrjFile)
+App.ActiveDocument=App.getDocument(wrkA2PlusPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkA2PlusPrjFile)
+App.Console.PrintMessage("Document Active Now")
+
+
+
+
+
+"""
+
+### STEP 1: create Load Front Chassis <Bow and Aft> Section by 
+###			1> Uncommenting for veiwable content between "#$$$ Begin Op" to 
+###				"#$$$ End Op" for STEP 5:
+###			2> Run Macro again
+###			3> Verifiy results
+###				3.1> FusedFntBow_Chassis and FusedAft_Chassis selected (highlighted)
+###				3.2>	 New Object: Label shown in Model Tree: FusedFront_Chassis_
+###			Note: All content below this STEP should be no-op or information print of 
+###			message:  'End of Active Development'
+
+"""
+#Import: FusedFrntBow_Chassis and FusedFrntAft_Chassis from 000_988
+#Rotate about X-axis 7.5 degrees
+"""
+
+"""
+#$$$ Begin Op
+App.Console.PrintMessage("Jumping tp A2Plus for import of Cabin Chassis Struts\n")
+App.Console.PrintMessage("Select fused solids\n")
+App.Console.PrintMessage("	Fused Cabin_Chassis Sub Assy\n")
+App.Console.PrintMessage("	Fused Cabin Chassis Sub Assy\n")
+Gui.Selection.clearSelection()
+#Gui.Selection.addSelection(wrkPrjFile,'FusedFrntBow_Chassis_')
+#Gui.Selection.addSelection(wrkPrjFile,'FusedFrntAft_Chassis_')
+
+# Begin command Std_Workbench
+Gui.Selection.clearSelection()
+Gui.activateWorkbench("A2plusWorkbench")
+# End command Std_Workbench
+
+Gui.Selection.clearSelection()
+Gui.runCommand('a2p_ImportPart',0)
+Gui.Selection.addSelection( wrkA2PlusPrjFile, wrkObjectCabinChassis )
+#App.getDocument(wrkA2PlusPrjFile).getObject(wrkObjectCabinChassis).Placement = App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(1,0,0),7.5))
+
+App.getDocument(wrkA2PlusPrjFile  ).recompute()
+   
+#$$$ End Op
+
+
+App.Console.PrintMessage('End of Active Development') 
+App.Console.PrintMessage('\n')
+
+

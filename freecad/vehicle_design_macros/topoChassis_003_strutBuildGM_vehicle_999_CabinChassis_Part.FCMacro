@@ -1,0 +1,247 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2024 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically builds a chassis entity in exo cage in roll-out 
+#*     ready state (less defined steering and suspension system) to use for 
+#*     prototyping the invisioned Abiriba_RG  GM EV vehicle 
+#*     detailed at: https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#*Helpful Sites:
+#*  Topographical scripting https://wiki.freecad.org/Topological_data_scripting
+#*	Fuse/Union of Selected components
+#*	  https://forum.freecad.org/viewtopic.php?t=4137 Re: Fuse multiple parts in 
+#*		python macro fails Post by wmayer » Mon Jun 10, 2013 with AAP adjustments
+#*	Part Rotation:  Re: how to rotate an object (placement) by yorik 02/06/2012  
+#*		https://forum.freecad.org/viewtopic.php?style=5&t=2213
+#*		Alternately used LES_Tower style rotation used in topoChassisFrame.py line 204
+#*		as seen Ln 204 	#circle.rotate(App.Vector(0, 0, 0),App.Vector(0, 0, 1), 90)
+#*		and modified for FrontChassis rotate of 7.5 degrees about X-axis not Z-Axis
+#*
+#* Change History
+#* 250202_lu looking at the delta at the 00799_989 level.  Seems to have evaporated 
+#*			at the 000_799_989 assy level.  
+
+#* 250123_lu Results perfect through testing of the cabinChassisSection()
+#			Test for the topoChassisToolbox usage of SF in the seting of lenght
+#			diameter, and radius.
+#* 250122_lu test-fix
+#* 250121_lu begin testing aap_lib import of topoChassisToolbox usage
+#* 241020_lu rename and reorganize to conform to numering/naming where used style
+#*				and strut-Part to subassy to assy maturity of design.
+#* 240921_tr topoChassis_mainBuildGM_vehicle_003_CabinChassis.FCMacro spun from 
+#*				topoChassis_mainBuildGM_vehicle_002_RearChassis.FCMacro.  Used gloabl
+#*				replacement for MID->Bow, RR->Aft, and Rear->Frnt
+#*
+#**	Tricks of Trade:
+#** 1> After un-commenting the Begin Op --- End Op content check to insure the the message
+#**		'End of Active Development' and carriageretrun/newline symbol are teh only other 
+#**		content visible.  Everything else should be grayed-out or commneted-out.  EXCEPT
+#**		FOR the content at the def section and declarations immediately above the def's
+#**	2> Watch for error messages dealing with removeShape().  Eithe user did or did not 
+#**		execute an un-comment to remove a shape/bspline or it had been removed but the 
+#**		reran the STEP 3 with the unwanted shape/bspline already removed.
+#*
+#*** Things That Go Bump In The Night:
+#***		1> 
+
+
+
+
+#uncomment for usage:
+#from topoChassisFrame import rearChassisSection
+#uncomment for usage:
+from topoChassisCabin import cabinChassisSection
+#testing for scale from topoChassisFrame import frontChassisSection
+import FreeCAD as App
+
+import aap_lib
+from aap_lib import topoChassisToolbox
+
+chassisTool_Error = 0
+chassisListVar_Error = 0
+
+aap_wrk = topoChassisToolbox.chassisTool()
+
+try:
+	aaptool = topoChassisToolbox.chassisTool()
+except Exception:
+	print("chassisTool issue.  aaptool can not be defined")
+	chassisTool_Error = 9
+try:
+    aapdata = topoChassisToolbox.chassisListVar()
+except Exception:
+    print("chassisListVar issue.  aapdata can not be defined")
+    chassisListVar_Error = 9
+try:
+	wrkShape= topoChassisToolbox.chassisShapeOpn()
+except Exception:
+	print("chassisShapeOpn issue.  aaptool can not be defined")
+	chassisTool_Error = 9
+
+
+
+
+
+#testing for trigger
+### STEP 1: create, save, close, then invoke/activate new project file
+#wrkPrjFile = "_00_969_spike_assembleStruts4CabinChassis"  # copy Project file "label" from property and replace first character with underscore
+wrkPrjFile = "_00_986_996_spike_aapLib_test4Cabin_asIs"
+wrkShapeObj   = 'Shape'      #Let FreeCAD do the naminging work during building
+
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+
+
+def getStri(startNdx):
+		if startNdx < 10 :
+			stri = '00' + str(startNdx)
+		else:
+			stri = '0' + str(startNdx)
+		return stri
+
+def removeShape(wrkShapeTarget):
+	### Begin command Std_Delete
+	App.getDocument(wrkPrjFile).removeObject(wrkShapeTarget)
+	App.getDocument(wrkPrjFile).recompute()
+	### End command Std_Delete
+
+def rtnSelection(startNdx, endNdx):
+	Gui.Selection.clearSelection()
+	if startNdx == 0:  #  if first item in list use the default Shape label
+		Gui.Selection.addSelection(wrkPrjFile,wrkShapeObj)
+		App.Console.PrintMessage('startNdx 0')
+		App.Console.PrintMessage('\n')
+	else:  #if starting at some other place in the list reset Shape??? naming
+		stri = getStri(startNdx)
+		wrkShapeLabel = wrkShapeObj+stri
+		Gui.Selection.addSelection(wrkPrjFile,wrkShapeLabel)
+		# dev App.Console.PrintMessage('startNdx > 0')
+		# dev App.Console.PrintMessage('\n')
+
+	# dev App.Console.PrintMessage(wrkShapeLabel)
+	# dev App.Console.PrintMessage('\n')
+	startNdx += 1	# assumes the first item is skipable but needed in selection
+	while startNdx < endNdx + 1:	# first item named Shape 2nd Shape001
+		wrkShapeLabel = 'Nope'
+		#dev 
+		App.Console.PrintMessage(startNdx)
+		#dev 
+		App.Console.PrintMessage('\n')
+		stri = getStri(startNdx)
+		wrkShapeLabel = wrkShapeObj+stri 
+		Gui.Selection.addSelection(wrkPrjFile,wrkShapeLabel)
+		if (wrkShapeLabel != 'Shape004'): # or (wrkShapeLabel != 'Shape009'):   #Assumes droppabble polygons non-tube paths
+			App.Console.PrintMessage(wrkShapeLabel)
+			App.Console.PrintMessage('\n')
+		startNdx += 1
+	return 	Gui.Selection.getSelection()	#selectItems = 
+
+
+
+### STEP 2: Create Shape...Shape013 using uncomment below then Comment-out
+# Create the basic cabin chassis  
+
+
+#$$$ Begin Op
+App.Console.PrintMessage("Comment/UnComment as Needed\n")
+#frontChassisSection()
+cabinChassisSection()
+#$$$ End Op
+
+
+
+### STEP 3: create Front Starboard Cabin Chassis Section by 
+###			1> Uncommenting for veiwable between "#$$$ Begin Op" 
+###				to "#$$$ End Op" for STEP 3:
+###			2> Uncomment removeShape() in two places to delete Shape 4 and Shape9 
+###			3> Run Macro again
+###			4> Verifiy results
+###				4.1> Shape..Shape012 selected (highlighted)
+###				4.2>	 New Object: Label shown in Model Tree: FusedStarboardCabin_Chassis_
+###				Note: All content below this STEP should be no-op or information print of 
+###				message:  'End of Active Development'
+###			5> Comment-out this step and move to STEP 4.
+###				Note: Insure the two removeShap() entries are commented-out 
+
+
+"""
+#$$$ Begin Op
+#Prepare to fuse bow and aft sections of Front Chassis
+# Once the "tubes" for the front chassis have been create 
+#	fuse them into a Part called: FusedChassis
+
+App.Console.PrintMessage("Comment/UnComment as Needed\n")
+App.Console.PrintMessage("Select shapes in the Front Starboard Cabin Chassis section\n")
+wrkShapeTarget= 'BSpline'    #front chassis bow polygon
+#comment-out for dev removeShape(wrkShapeTarget)
+wrkShapeTarget= 'BSpline001'    #front chassis aft polygon
+#comment-out for dev  removeShape(wrkShapeTarget)
+
+#post removal of unwanted Labeled objects like polygon used for development
+startNdx = 0		# First Labeled item/tube/shape of chassis
+endNdx   = 12 + 1		# Last Labeled item/tube/shape of chassis	 
+
+selectItems = rtnSelection(startNdx, endNdx)
+newShape = selectItems[0].Shape
+App.Console.PrintMessage(selectItems[0].Shape)
+App.Console.PrintMessage('\n')
+
+i = 1 # skip first selected shape
+while i < endNdx:   # no longer worry about Shape 4
+	newShape = newShape.fuse(selectItems[i].Shape)
+	App.Console.PrintMessage(selectItems[i].Shape)
+	App.Console.PrintMessage('\n')
+	i += 1
+newObject = App.ActiveDocument.addObject("Part::Feature","FusedStarbordCabin_Chassis\n")
+newObject.Shape = newShape
+App.ActiveDocument.recompute()
+#$$$ End op
+"""
+
+
+
+### STEP 4: create Front Port Cabin Chassis Section by 
+###			1> Uncommenting for veiwable content between "#$$$ Begin Op" 
+###				to "#$$$ End Op" for STEP 3:
+###			2> Run Macro again
+###			3> Verifiy results
+###				3.1> Shape13..Shape025 selected (highlighted)
+###				3.2>	 New Object: Label shown in Model Tree: FusedPortCabin_Chassis_
+###			Note: All content below this STEP should be no-op or information print of 
+###			message:  'End of Active Development'
+
+
+
+# Once the "tubes" for the front chassis have been create 
+#	fuse them into a Part called: FusedRearRR_Chassis
+
+
+"""
+### Begin Op
+startNdx = 13		# First Labeled item/tube/shape of chassis
+endNdx   = 25 +1		# Last Labeled item/tube/shape of chassis	 
+selectItems = rtnSelection(startNdx, endNdx)
+newShape = selectItems[0].Shape  # new set of items 0-4
+App.Console.PrintMessage(selectItems[0].Shape)
+App.Console.PrintMessage('\n')
+i = 1 # skip first selected shape
+while i < endNdx - (startNdx):  # adjust for starting at other than Shape000 
+	newShape = newShape.fuse(selectItems[i].Shape)
+	App.Console.PrintMessage(selectItems[i].Shape)
+	App.Console.PrintMessage('\n')
+	i += 1
+newObject = App.ActiveDocument.addObject("Part::Feature","FusedPortCabin_Chassis\n")
+newObject.Shape = newShape
+App.ActiveDocument.recompute()
+### End Op
+
+"""
+
+
+App.Console.PrintMessage('End of Active Development') 
+App.Console.PrintMessage('\n')
+
+
+
