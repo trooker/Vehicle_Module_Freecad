@@ -1,0 +1,80 @@
+Base Dimensions		See 231121_0002_how2HookUp for syntax
+Wheel Base	2081.54
+Width Front Hub2Hub or Track	1854	<<DocName>>#<<SpreadsheetNmae>>.Cell_Alias
+Front View Height to Width	0.808522	<Master>>#<<AAA_Master>>.aaa_mainOD_radius
+Top View Length to Width	2.37225
+Side View Length to Height	2.377
+scalefactor3.5 to full size	20.8549
+Height inches	1449	1449 mm
+Length bumper to bumper	3556	3556 mm
+Vehicle Width OEdge Tire	1854	1854 mm
+Mule Gimbal Radius to Width
+Main Pipe OutSide Radius	76.2
+Main Pipe Inside Radius	19.05
+Pnt1 x	0
+Pnt1  y	0
+Pnt2 x	208.549
+Pnt2 y	208.549
+Pnt3 x	490.621
+Pnt3 y	717.498
+Pnt4 x	573.363
+Pnt4 y	967.364
+Pnt5 x	625.593
+Pnt5 y	1251.29
+Pnt6 x	693.184
+Pnt6 y	1668.39
+Pnt7 x	693.184
+Pnt7 y	1876.94
+Pnt8 x	693.184
+Pnt8 y	2085.49
+Pnt9 x	693.29
+Pnt9 y	2502.58
+Pnt10 x	670.195
+Pnt10 y	2854.37
+Pnt11 x	560.809
+Pnt11 y	3181.78
+Pnt12 x	31.0942
+Pnt12 y	3181.78
+Pnt13 x	31.0942
+Pnt13 y	3314.21
+Arch Pnt13-Pnt14	306.758
+Arch X Center	262.368
+Pnt14 x	228.1
+Pnt14 y	3545.32
+Pnt15 x	228.1
+Pnt15 y	3545.32
+X_offset	254.401
+Pnt21X	254.401
+Pnt21Y	0
+Pnt22X	462.95
+Pnt22Y	208.549
+Pnt23X	745.023
+Pnt23Y	717.498
+Pnt24X	827.764
+Pnt24Y	967.364
+Pnt25X	879.994
+Pnt25Y	1251.29
+Pnt26X	947.585
+Pnt26Y	1668.39
+Pnt27X	947.585
+Pnt27Y	1876.94
+Pnt28X	947.585
+Pnt28Y	2085.49
+Pnt29X	947.691
+Pnt29Y	2502.58
+Pnt30X	924.596
+Pnt30Y	2854.37
+Pnt31X	815.21
+Pnt31Y	3181.78
+Pnt32X	285.496
+Pnt32Y	3181.78
+Pnt33X	285.496
+Pnt33Y	3314.21
+Pnt34X	482.501
+Pnt34Y	3545.32
+Pnt35X	228.1	Past the Offset to Arch 34
+Pnt35Y	3545.32
+Arch Pnt33-Pnt34	306.758
+Arch_X_Cntr33_34	262.368
+FilletFrntY	146.111
+ProfileXloc	60.5206	Profile New Location due to fillet
