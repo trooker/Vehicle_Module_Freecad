@@ -1,1 +1,15 @@
-placeholder
+Please note the following:
+
+
+1> the following Example Files are too large to display on the current GITHub version.
+
+022_998.1_2seat_tabbyChasis.FCStd
+022_998.1_2seat_tabbyChasis.FCStd1
+022_998_2seat_tabbyChassis.FCStd
+022_998_2seat_tabbyChassis.FCStd1
+057_004_300_998_motor_im225_shaft.FCStd
+057_004_300_998_motor_im225_shaft.FCStd1
+
+2> FCStd files appearing in the "resources" folder will need to be transferred to the "Examples" folder
+for the FCStd files accessible.  As of 2/17/2025, AAP will accomplish that sometime in the future.  Otherwise 
+you will need to move them yorself.
