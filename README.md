@@ -1,3 +1,13 @@
+AAP announced June 30, 2025 that further work on the GM_Vehicle Module for FreeCAD and development of the HehJay II has been deferred.  
+
+Please refer to
+Latest Status as of 250630:
+https://abbottanp.com/artifacts/abiriba_rg/page2.html#deferred
+
+and further details:
+https://abbottanp.com/artifacts/gm_vehicle_WB/imageGallery.html#deferred 
+
+
 # GM_Vehicle_Module for FreeCAD
 A FreeCAD Workbench supporting the creation of virtual and real ground mobile vehicles (wheeled).
 
