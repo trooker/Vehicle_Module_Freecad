@@ -1,4 +1,4 @@
-AAP announced June 30, 2025 that further work on the GM_Vehicle Module for FreeCAD and development of the HehJay II has been deferred.  
+The AAP R&D Board announced June 30, 2025 that further work on the GM_Vehicle Module for FreeCAD and development of the HehJay II Weapons System Platform has been deferred.  
 
 Please refer to
 Latest Status as of 250630:
