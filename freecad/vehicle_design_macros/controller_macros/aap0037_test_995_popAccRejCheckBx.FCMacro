@@ -1,0 +1,38 @@
+"""
+==>> python FreeCAD how to receive signals from QtDesigner *.ui file sender at the receiver slot
+https://www.google.com/search?client=ubuntu-sn&channel=fs&q=python+FreeCAD+how+to+receive+signals+from+QtDesigner+*.ui+file+sender+at+the+receiver+slot
+
+
+"""
+
+from PySide2 import QtGui, QtCore
+import FreeCADGui
+
+class MyHandler:
+    def __init__(self):
+        # Load the UI file
+        #full name works
+        ui_file_path = "/home/tom/.local/share/FreeCAD/Macro/resources/ui/aap0037_hehJayAccRejCheckBx.ui"
+        #ui_file_path = "aap0037_hehJayAccRejCheckBx.ui"
+        self.form = FreeCADGui.PySideUic.loadUi(ui_file_path)
+
+        # Connect signals to slots
+        self.form.pushButton.clicked.connect(self.on_button_clicked)
+        self.form.lineEdit.textChanged.connect(self.on_text_changed)
+
+        # Create a task dialog
+        dialog = QtGui.QDialog()
+        self.form.setupUi(dialog) # Setup the UI to be displayed in the dialog
+        dialog.exec_()
+
+    def on_button_clicked(self):
+        print("Button clicked!")
+        # Access other UI elements and perform actions
+        text = self.form.lineEdit.text()
+        print("Text in line edit:", text)
+
+    def on_text_changed(self, text):
+       print("Text changed:", text)
+
+  # Create an instance of the handler class
+handler = MyHandler()

@@ -1,0 +1,110 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program is a spike for bringa simple QtDesign layout into the FreeCAD - Abbott
+#*    prototyping the invisioned Abiriba_RG  GM EV vehicle 
+#*     detailed at: https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#*Helpful Sites:
+'''
+250409_lu Integrate with 057_000_999_vehicleConrolPanel
+
+250608_lu Mirgate to s better simpler demo.
+
+250406_lu Morphed aap0037_998.  then followed AI
+    ==>> Python QtDeigner  Signals/Slots embedded in FreeCAD macro
+    https://www.google.com/search?client=ubuntu-sn&channel=fs&q=Python+QtDeigner++Signals%2FSlots+embedded+in+FreeCAD+macro
+    
+250404_lu See 250402 gaugeClock-slider_btns
+    =>> FreeCAD how to receive signals from QtDesigner *.ui file sender at the receiver slot
+https://www.google.com/search?client=ubuntu-sn&channel=fs&q=FreeCAD+how+to+receive+signals+from+QtDesigner+*.ui+file+sender+at+the+receiver+slot
+'''
+
+'''
+        self.btnCancel.clicked.connect(TestDialog.close) # type: ignore
+        self.btnFuel.clicked.connect(TestDialog.exec) # type: ignore
+        self.btnAccel.clicked.connect(TestDialog.accept) # type: ignore
+        self.btnAccel.clicked.connect(self.lblStatus.update) # type: ignore
+        self.btnFuel.clicked.connect(self.lblStatus.update) # type: ignore
+
+
+'''
+
+
+
+import FreeCAD as App
+import FreeCADGui as Gui
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtCore import (Qt, Slot, QTimer)
+
+from aap0038_verysimpleUI2PY import Ui_TestDialog
+#from .TaskPanel import createTask
+
+wrkStr = '_00_641_988_steeringAssy'
+wrkObjDrvShaft = 'Binder' #'BinderShapeDrvShaft'     #'Body.Binder'
+App.Console.PrintMessage('ln 44  ::' + wrkStr + '.'+ wrkObjDrvShaft+'\n')
+
+App.setActiveDocument(wrkStr)
+App.ActiveDocument=App.getDocument(wrkStr)
+Gui.ActiveDocument=Gui.getDocument(wrkStr)
+
+
+
+
+class TestDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_TestDialog()
+        self.ui.setupUi(self)
+        self.ui.btnAccel.clicked.connect(self.accel)
+        self.ui.btnFuel.clicked.connect(self.fuel)
+        self.ui.btnFuel.clicked.connect(self.update)
+        self.ui.btnAccel.clicked.connect(self.update)
+        self.ui.btnCancel.clicked.connect(self.close)
+
+    @Slot()
+    def close(self):
+        App.Console.PrintMessage("Cancel Button Clicked!\n")
+        fina_update(0)
+
+    @Slot()
+    def accel(self):
+        App.Console.PrintMessage("Accel Button Clicked!\n")
+        fina_update(1)
+
+    @Slot()
+    def fuel(self):
+        App.Console.PrintMessage("Fuel Button Clicked!\n")
+        fina_update(2)
+ 
+
+    def fina_update(self, invalue):
+        App.Console.PrintMessage('Final Update: Status: ' + str(invalue) + '\n')
+        if invalue == 2:
+            self.ui.lblStatus("Fuel")
+        elif invalue == 1:
+            self.ui.lblStatus("Speed+")
+        elif invalue == 0:
+            self.ui.lblStatus("Close")
+        else:
+	        self.ui.lblStatus("Count Down to Off")
+
+    def update(self):
+        fina_update(-1)
+
+        
+
+class MyCommand:
+    def load(self):
+        dialog = TestDialog()
+        dialog.exec_()  #works 
+        #runs with no response dialog.accept()
+        #runs with no response dialog.open()
+
+
+#Gui.ActiveDocument.addCommand("MyCommand", MyCommand())
+
+fireDialog = MyCommand()
+fireDialog.load()
+

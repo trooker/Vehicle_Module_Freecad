@@ -1,0 +1,683 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program is a spike for bringing simple QtDesign layout into the FreeCAD - Abbott
+#*    prototyping the invisioned Abiriba_RG  GM EV vehicle 
+#*    detailed at: https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#*Helpful Sites:
+'''
+1> See 250323_1103_examples_PySide for AI questions/inputs of valuein building program
+2> Specific source https://doc.qt.io/qtforpython-6/examples/example_gui_analogclock.html
+       as noted in copyright "The Qt Company Ltd with addaptations for usage on HehJay
+3> List of examples https://doc.qt.io/qtforpython-6/examples/example_qml_tutorials_extending-qml_chapter6-plugins.html
+4> GNU Radio https://wiki.gnuradio.org/index.php?title=Main_Page
+5> Google collection of guages: https://www.google.com/search?q=qt%20gauge%20widget&udm=2&sa=X&ved=0CC0QtI8BahcKEwi4y6ypw-6MAxUAAAAAHQAAAAAQFA&biw=1096&bih=675&dpr=1
+6> Others:
+    Progress Bar: https://doc.qt.io/qt-5/qml-qtquick-controls-progressbar.html
+    The electric vehicle digital dashboard: https://www.youtube.com/watch?v=j6BS3f9LM9I
+    Examples: https://qwt.sourceforge.io/controlscreenshots.html
+    Gauges: https://www.google.com/search?sca_esv=22ca403608f503d2&sxsrf=AHTn8zqnsGbbSZSL62NyfDk5CaPIcKbYCA:1745458471431&q=circular+gauge+qt+gauge+widget&uds=ABqPDvztZD_Nu18FR6tNPw2cK_RR9uegVYgQNm0A_FIwPHdCgl5EIbfU0vDhivG2URhPgQ6ziH9vp1fWif_4CVhN5cnXQpfMZs6nnc9En4Gyv9QgUDZ3GoDqmHpIfuX8XU-jvsmpHhKlsRyI_UnH8K6jKII8fiFnKjBxn_in83HLO5ji5ZnESMI&udm=2&sa=X&ved=2ahUKEwixs6PBw--MAxVJMlkFHS1aD8YQxKsJegUIhwEQAQ&ictx=0&biw=1096&bih=675&dpr=1
+7> Show markings  https://stackoverflow.com/questions/63698714/how-to-show-markings-on-qdial-in-pyqt5-python
+8> Slice steering like SquirrelChaser.  https://stackoverflow.com/questions/64639303/how-to-detect-qt-mouse-events-only-over-qpainted-objects
+
+Need to Add
+ setNotchesVisible(True) maks along outlin
+  setWrapping(False) halts continuous rotation.
+
+Version History
+250501_lu Try to integrate AI poffered solution ==>> Python PySide2 What would a class look like for a serial read of the ttyUSB0 port
+          https://www.google.com/search?client=ubuntu-sn&channel=fs&q=Python+PySide2+What+would+a+class+look+like+for+a+serial+read+of+the+ttyUSB0+port
+
+
+250430_lu Integrate USB0 AAP Controler into display screen features and behavior
+
+
+250425_lu Tested aap0035_994 first to verifiy functionality.  Added Acceleration and Fuel sliders in a layout
+         with Dial, buttons, and label.  Experimented with Num Lock On/Off for Acceleration.  Maybe the 
+         Squirrel Chaser control box is the most workable solution at the moment.
+
+250424_lu Return to active troubleshooting.  The (200,200) version was found to have the 
+        self.hasEStopBnPushed = False and self.isRunning = False missing from __init__().  Tested 
+        well after that.
+ 
+250422_lu Troubleshooting the aapNavDial class and its variantwith aap0035_003_004
+        which works well on a simple subclassing.
+        Start with aap0035_003_004 and then build aap0035_995 from 996 to see what breaks 
+        the working dial
+
+250421_lu Incorporate lessons from aap0035_003_002_compass.FCMacro into aapNavDial
+        Grub: PySide2 QDial needle draw/paint
+        AI: https://www.google.com/search?client=ubuntu-sn&channel=fs&q=PySide2+QDial+needle+draw%2Fpaint
+            I believe I saw this same basic object example in the QtForm, https://wiki.python.org/, or https://doc.qt.io/....
+            The one I copied used "self.setMinimumSize(100, 100)" in the __init__() which the AI does not.
+            That setMinimumSize was adjusted to 200,200 and test without incident.
+ 
+250419_lu Introduce operational performance simulation:
+        Assumptions: Flat, Hard Dirt, Aerodynamic = 0 until 55mph Coff of Friction Force = mu * N
+                       See Holy Grail of AWD System Rivian R1T video of article 4.56 and 6.56 for discussion for mu
+                       https://insideevs.com/news/593277/engineering-explained-talks-rivian-r1t-holy-grail-awd-systems/
+        Variables considered 
+            Service Weight: Vehicle estimate, crew of two, combat load for three days.
+            Surface: Dry Hard, see Rivian study
+            Slope: Flat, Slopes Up, Slopes Down
+            Vehicle KWH/MPH Pre Aerodynamic 0-55 mph
+            Vehicle KWH/MPH Post Aerodynamic 55 to 75 mph
+        Integration and unit testing completed
+
+250418_lu Begin integrate aap0035_hehJayDrvrControl_999.FCMacro with the aap0035_997_customSignal4Dial.FCMacro
+        dial behavior.
+
+
+250415_lu (abstracted from aap0035_0097customSignal4Dial)
+       Works well with mouse and numpad
+       With Left mouse 
+       start:: run app/macro
+       reset:: move mouse out of dial area
+
+              port::                  starboard::
+       step moves
+              left (port pad)         right (port pad)   NOTE: right pad used for accelerator
+              left arrow              right arrow
+              4/2 numpad              6/8 numpad
+              mouse roller            mouse roller
+       rapid jumps
+              page down               page up
+              pg dn                   pg up
+       position jumps
+              port: minimum           starboard: maximum      
+              home
+
+
+250412_lu Continue journey.
+        Grub: PySide2 for a dialog form with a QWidget object that inherets from QDial what custom signals are required to signal the event of a mouse entering the dial so that a connection can be made to a Form's function 
+        https://www.google.com/search?client=ubuntu-sn&channel=fs&q=PySide2+for+a+dialog+form+with+a+QWidget+object+that+inherets+from+QDial+what+custom+signals+are+required+to+signal+the+event+of+a+mouse+entering+the+dial+so+that+a+connection+can+be+made+to+a+Form%27s+function+
+        Grub: PySide2 example using widget that inherets QDial but uses custom signals to connect to slots in a dialog form.
+        AI gave close model that worked.  But.. did not treanslate to target aap0035_...
+        https://www.google.com/search?client=ubuntu-sn&channel=fs&q=PySide2+example+using+widget+that+inherets+QDial+but+uses+custom+signals+to+connect+to+slots+in+a+++++++++++dialog+form.
+
+250411_lu Implemented leaveEvent handling usig by building aapLib aapDial class
+        Grub: PySide2 what are the supported types for custom signal connect     self.dialUI.mouseEnters.connect(self.dialActive) <class 'TypeError'>: 'PySide2.QtCore.QObject.connect' called with wrong argument types:   PySide2.QtCore.QObject.connect(aapDial, str, bool) Supported signatures:
+        https://wiki.qt.io/Qt_for_Python_Signals_and_Slots
+        Grub: Freecad Python QWidget.QDial leaveEvent() AI example as guide
+        https://www.google.com/search?client=ubuntu-sn&channel=fs&q=Freecad+Python+QWidget.QDial+leaveEvent%28%29
+        Grub: Freecad PySide2 QWidget.QDial leaveEvent()
+        https://www.google.com/search?q=Freecad+PySide2+QWidget.QDial+leaveEvent%28%29&client=ubuntu-sn&hs=dqi&sca_esv=0312fbabf4daa587&channel=fs&sxsrf=AHTn8zpAEhiUi8UK_xhOhCAU6DyolWR0PQ%3A1744397407552&ei=X2T5Z8G4IbOhiLMPxqLNyAY&ved=0ahUKEwiB5Mve0tCMAxWzEGIAHUZRE2kQ4dUDCBA&uact=5&oq=Freecad+PySide2+QWidget.QDial+leaveEvent%28%29&gs_lp=Egxnd3Mtd2l6LXNlcnAiKkZyZWVjYWQgUHlTaWRlMiBRV2lkZ2V0LlFEaWFsIGxlYXZlRXZlbnQoKTIFECEYoAEyBRAhGKABMgUQIRigATIFECEYoAFIoZ0sUJmSKVj9rClwAngAkAEAmAFqoAGUB6oBAzguMrgBA8gBAPgBAZgCDKAC5wfCAgsQABiABBiwAxiiBMICCBAAGLADGO8FwgIIEAAYgAQYogTCAgUQABjvBcICBxAjGLACGCfCAggQIRigARjDBJgDAIgGAZAGBZIHAzguNKAHmyGyBwM2LjS4B9kH&sclient=gws-wiz-serp
+        Grub: PySide2QWidget.QDial leaveEvent() document emit signal
+        https://www.google.com/search?q=PySide2QWidget.QDial+leaveEvent%28%29+document+emit+signal&client=ubuntu-sn&sca_esv=cdd70d77cbc6b9e0&channel=fs&sxsrf=AHTn8zr3bc3mTqZWfLN-qXQ-CyS1kptslA%3A1744403673833&ei=2Xz5Z9-3MpnQ5NoP7LjwwQk&ved=0ahUKEwifiMuK6tCMAxUZKFkFHWwcPJgQ4dUDCBA&uact=5&oq=PySide2QWidget.QDial+leaveEvent%28%29+document+emit+signal&gs_lp=Egxnd3Mtd2l6LXNlcnAiNlB5U2lkZTJRV2lkZ2V0LlFEaWFsIGxlYXZlRXZlbnQoKSBkb2N1bWVudCBlbWl0IHNpZ25hbDIHECEYoAEYCjIHECEYoAEYCjIFECEYqwIyBRAhGKsCMgUQIRirAkjxQlCcAljUJ3ABeAGQAQCYAagBoAGyDKoBBDAuMTK4AQPIAQD4AQGYAg2gAqoNwgIKEAAYsAMY1gQYR5gDAIgGAZAGCJIHBDEuMTKgB_JUsgcEMC4xMrgHmw0&sclient=gws-wiz-serp
+250330_lu Issue with Slider
+python  QSlider value change
+https://stackoverflow.com/questions/43152489/pyqt5-qslider-valuechanged-event-with-delay
+
+'''
+
+import sys
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtWidgets import (QApplication, QWidget, QPushButton, QDial, QSlider, QVBoxLayout, QHBoxLayout, QLabel)
+from PySide2 import QtGui, QtCore
+from PySide2.QtGui import QFont, QColor
+from PySide2.QtCore import (Qt, Slot, QTimer)
+from PySide2.QtCore import Signal, QEvent
+from PySide2.QtGui import QCursor
+
+"""
+Comment these out to return behavior but drops the gauge-dial
+"""
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+"""  
+uses these elements
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtWidgets import (QApplication, QWidget, QPushButton, QSpinBox, QDial, QSlider, QVBoxLayout, QHBoxLayout, QLabel)
+""" 
+""" for aapUSB0Read """
+from PySide2.QtSerialPort import QSerialPort, QSerialPortInfo
+from PySide2.QtCore import QIODevice
+from PySide2.QtCore import QObject, Signal, QTimer
+
+
+"""
+AI poffered solution ==>> Python PySide2 What would a class look like for a serial read of the ttyUSB0 port
+          https://www.google.com/search?client=ubuntu-sn&channel=fs&q=Python+PySide2+What+would+a+class+look+like+for+a+serial+read+of+the+ttyUSB0+port
+Does not work it is strongly messed-up
+"""
+"""
+
+#import serial # did not like
+#from PySide2.QtCore import QObject, Signal, QTimer
+
+
+class SerialReader(QObject):  #aapUSB0Read
+    data_received = Signal(str)
+    error_occurred = Signal(str)
+
+    def __init__(self, port="/dev/ttyUSB0", baudrate=9600):
+        super().__init__()
+        #From aapUSB0Read
+        self.serial_Port = QSerialPort()
+
+        self.port = port
+        self.baudrate = baudrate
+        self.serial_port = None
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.readPort)
+
+    def openPort(self):
+        #try:  missing SerialException
+        self.serial_port = seria_portl.Serial(self.port, self.baudrate, timeout=1)
+        self.timer.start(100)  # Read every 100 ms
+        #except self.SerialException as e:
+        #    self.error_occurred.emit(str(e))
+
+    def closePort(self):
+        if self.serial_Port and self.serial_port.is_open:
+            self.timer.stop()
+            self.serial_port.close()
+
+    def readPort(self):
+        if self.serial_port and self.serial_port.is_open and self.serial_port.in_waiting > 0:
+            try:
+                data = self.serial_port.readline().decode('utf-8').strip()
+                self.data_received.emit(data)
+            except serial.SerialException as e:
+                self.error_occurred.emit(str(e))
+            except UnicodeDecodeError:
+                self.error_occurred.emit("Unicode decode error")
+"""
+
+
+"""
+==>> Python PySide2 What would a class look like for a serial read of the ttyUSB0 port
+Google AI suggestion
+https://www.google.com/search?client=ubuntu-sn&channel=fs&q=Python+PySide2+What+would+a+class+look+like+for+a+serial+read+of+the+ttyUSB0+port
+"""
+
+#from aapLib import aapUSB0Read
+class aapUSB0Read(QObject):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.serial_port = QSerialPort()
+        self.serial_port.port = '/dev/ttyUSB0'
+        self.serial_port.baudrate = 9600
+        self.serial_port.read_mSec  = 200
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.readPort)
+
+        self.serial_port.setPortName(self.serial_port.port)
+        self.serial_port.setBaudRate(QSerialPort.Baud9600)
+        self.serial_port.setDataBits(QSerialPort.Data8)
+        self.serial_port.setParity(QSerialPort.NoParity)
+        self.serial_port.setStopBits(QSerialPort.OneStop)
+        self.serial_port.is_open = False # intialize an attribute
+
+    def openPort(self):
+        if self.serial_port.open(QIODevice.ReadWrite):
+            print("Port opened successfully")
+            self.isTrafficOn = True
+            self.serial_port.is_open = True
+        else:
+            print("Failed to open port")
+            self.isTrafficOn = False
+            self.serial_port.is_open = False
+            self.termKnt = 0	
+
+    def readPort(self):
+        while self.isTrafficOn:
+            if self.serial_port.waitForReadyRead(self.serial_port.read_mSec):  # Wait for data with a timeout of 1000ms
+                received_data = self.serial_port.readAll()
+                print("Received:", received_data.data().decode())
+            else:
+                if termKnt > 10:
+                    self.isTrafficOn = False
+                    print("Controller Off")
+                else:
+                    termKnt += 1
+        return 9
+
+    def closePort(self):
+        if self.serial_port and self.serial_port.is_open:
+            self.timer.stop()
+            self.serial_port.close()
+
+
+    
+#from aapLib import aapNavDial, aap_CompasWidget
+class aapNavDial(QDial):
+    valueChangedCustom = QtCore.Signal(int)
+    mouseHovers = QtCore.Signal(int)
+    mouseEnters = QtCore.Signal(int)  #aap Signal
+    mouseExits  = QtCore.Signal(int)  #aap Signal
+
+	
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumSize(200, 200)  #originally from aap0035_003_002/4
+        self.setMinimum(0)
+        self.setMaximum(100)  
+        self.dialCenter = 0  # value of 50 points South
+        self.setGeometry(50, 50, 150, 150)
+        self.setValue(self.dialCenter) # Initial value
+        self.setNotchesVisible(True)
+        self.last_value = self.dialCenter
+        self.valueChanged.connect(self._emit_custom_signal)
+        self.mouseHovers.connect(self.hoverEvent)
+        self.mouseEnters.connect(self.enterEvent)
+        self.mouseExits.connect(self.leaveEvent)
+        print('begin aap0035_003_002\n')       
+
+    def paintEvent(self, event):
+        #print('paintEvent\n')       
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Background circle
+        painter.setBrush(QColor(50, 50, 50))
+        painter.drawEllipse(self.rect().center(), min(self.width(), self.height()) // 2 - 2, min(self.width(), self.height()) // 2 - 2)
+
+        # Needle
+        painter.setBrush(QColor(255, 0, 0))
+        angle = self.value() / (self.maximum() - self.minimum()) * 360  # Calculate angle
+        center = self.rect().center()
+
+        # Needle polygon
+        needle_length = min(self.width(), self.height()) // 2 - 10
+        p1 = QPoint(center.x(), center.y() - needle_length)
+        p2 = QPoint(center.x() + 5, center.y()+30)
+        p3 = QPoint(center.x() - 5, center.y()+30)
+
+        # Needle Knob
+        polygon = QPolygon([p1, p2, p3])
+        painter.translate(center)
+        painter.rotate(angle)
+        painter.translate(-center)
+        painter.drawConvexPolygon(polygon)
+        #painter.drawEllipse(self.rect().center(), 25, 25)
+        painter.drawEllipse(center.x()-12.5,center.y()+20, 25, 25)
+
+        # Center circle
+        painter.setBrush(QColor(255, 255, 255))
+        painter.drawEllipse(self.rect().center(), 5, 5)
+
+   ## end from aap0035_003_002
+        painter.end()
+
+    def _emit_custom_signal(self, value):
+        #print('value change')
+        self.valueChangedCustom.emit(value)
+
+    def hoverEvent(self,event):
+        #print("Mouse hovering over dial")
+        self.setValue(self.last_value)
+        self.mouseHovers.emit(9999)
+        self.on_value_changed(9999)
+        self._emit_custom_signal(9999)
+        self.isDialHot = True       
+
+    def enterEvent(self, event):
+         # Code to execute when the mouse leaves the dial
+        #print("Mouse entered the dial")
+        self.setValue(self.last_value)
+        self.mouseEnters.emit(1111)
+        self.on_value_changed(1111)
+        self._emit_custom_signal(1111)
+        self.isDialHot = True        
+
+
+    def leaveEvent(self, event):
+         # Code to execute when the mouse leaves the dial
+        #print("Mouse left the dial")
+        self.setValue(self.last_value)
+        self.isDialHot = False
+        self.mouseExits.emit(1001)
+        self.on_value_changed(1001)
+        self._emit_custom_signal(1001)
+
+    def on_value_changed(self, value):
+        self.last_value = value
+        '''
+        for __init()__
+        add         self.dialUI.valueChanged.connect(self.update_steerLabel)
+        '''
+def create_btnEStop(steerLabel, callback):
+    button = QPushButton(steerLabel)
+    button.clicked.connect(callback)
+    button.setStyleSheet("background-color: red;")
+    #button.setStyleSheet("font-color: white;")
+    button.setGeometry(50, 50, 150, 150)
+    # Font and size
+    font = QFont("Arial", 34)
+    button.setFont(font)
+    # Color
+    button.setStyleSheet("QPushButton {color: white; background-color: red;}")
+    #button.setVisible(False)
+    return button
+
+
+
+def create_button(steerLabel, callback):
+    button = QPushButton(steerLabel)
+    button.clicked.connect(callback)
+    return button
+
+"""
+Hold for future possible use
+def create_dial(min_val, max_val, center_val, callback):
+    print('create aapNavDial\n')       
+    dial = aapNavDial()
+    dial.setMinimum(min_val)
+    dial.setMaximum(max_val)
+    dial.setValue(center_val)
+    dial.setNotchesVisible(True)
+    dial.lastvalue = center_val
+    dial.valueChanged.connect(callback)
+    dial.setTracking(True)   #insure value changes with corsor move
+    #dial.setVisible(False)
+    print('Returning to home plate\n')
+    return dial
+"""
+
+def create_Accel_Slider(min_val,max_val ,tickpos,callback):
+ #   slider = QSlider(min_val, max_val, tickpos)
+    slider = QSlider()
+    slider.setMinimum(min_val)
+    slider.setMaximum(max_val)
+    slider.setValue = 0
+    slider.TickPosition = 3
+    slider.valueChanged.connect(callback)
+    #slider.setVisible(False)
+    return slider
+
+def create_Fuel_Slider(min_val, max_val,callback):
+    slider = QSlider()
+    slider.setMinimum(0)
+    slider.setMaximum(100)
+    slider.TickPosition = 3
+    slider.setValue(100)
+    slider.valueChanged.connect(callback)
+    #slider.setVisible(False)
+    return slider
+
+
+class FooDial(QWidget):
+    def __init__(self, parent=None):
+        super(FooDial,self).__init__(parent)
+        self.steerLabel = QLabel("Click Start Stop to Activate/Halt")
+        self.btnStarter = create_button("Start", self.on_button_clicked)
+        self.btnEStop   = create_btnEStop("Emergemcy\n Stop", self.on_button_clicked)
+        self.btnEStop.clicked.connect(self.btnEStop_toggle_visibility)
+        EStoplayout = QHBoxLayout()
+        EStoplayout.addStretch()  # Add stretch to push the button to the right
+        EStoplayout.addWidget(self.btnEStop, alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.hasEStopBnPushed = False
+        self.isRunning = False
+        self.isDialHot = False 
+        self.dialMin = 0
+        self.dialMax = 100
+        self.dialCenter = 0   #50
+        self.dialLastValue =  self.dialCenter
+        self.dialActive = False  #dialUI is not active yet.  Mouse needs to hoover over
+        #Flags used ot turn messages on/off and control redundant messages
+        self.FlipFlagExit = True   #Begins as True: just exited
+        self.FlipFlagEnter = False
+        self.dialUI = aapNavDial()
+        self.dialUI.valueChangedCustom.connect(self.update_label)
+        self.dialUI.valueChanged.connect(self.update_label)
+        self.dialUI.mouseHovers.connect(self.dialHovers(9999))
+        #self.dialUI.mouseEnters.connect(self.dialActive(1111))
+        self.dialUI.mouseExits.connect(self.dialReleased(1001))
+        self.dialUI.valueChanged.connect(self.on_dial_changed)
+        self.dialUI.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Allow dial to receive focus
+  
+        # end dial aap0035-997
+        self.sliderAccel = create_Accel_Slider(0,100,3, self.on_sliderAccel_valueChanged)
+        self.sliderFuel =  create_Fuel_Slider(0,100, self.on_sliderFuel_valueChanged)
+        
+        
+        wndlayout = QVBoxLayout()      #Parent layout
+        wndlayout.addWidget(self.btnStarter)
+        wndlayout.addWidget(self.steerLabel)
+      
+        dashBoardLayout = QHBoxLayout()
+
+        dashBoardLayout.addWidget(self.sliderAccel)
+        dashBoardLayout.addWidget(self.dialUI)
+        dashBoardLayout.addWidget(self.sliderFuel)
+        
+        #wndlayout.addWidget(self.dialUI)
+        #wndlayout.addWidget(self.sliderAccel)
+        #wndlayout.addWidget(self.sliderFuel)
+        wndlayout.addLayout(dashBoardLayout)
+        wndlayout.addWidget(self.btnEStop)
+        self.setLayout(wndlayout)
+
+        self.usbControler = aapUSB0Read()   #SerialReader()  # aapUSB0Read()
+        self.usbControler.openPort()
+        self.usbControler.readPort()
+        self.usbControler.closePort()
+
+    ##  begin from aap0035_997
+    def set_dial_value(self, value):
+         self.dial.setValue(value)
+
+    def on_dial_changed(self, value):
+        #Reset to 50 when focus changes
+        if value != 50:
+            self.dial.setValue(50)
+
+
+    @Slot()
+    def update_label(self, value):
+        #print('update_label\n')
+
+        if value == 1001:  #Mouse exits  Dial
+            # dev print('Cursor not in Dial')
+            #print('update_label: value = 1001 Mouse exits  Dial\n')
+            if self.FlipFlagExit == False:
+                 # dev print("isDialHot Flipping to False")
+                 self.FlipFlagExit = True
+                 self.FlipFlagEnter = False
+            self.steerLabel.setText(f"Value: {'Forward'}")
+            # dev self.steerLabel.setText(f"Value: {'Forward Now Going Cold 1001'}")
+            self.dialUI.setValue(self.dialCenter)
+            if self.isDialHot == True:
+                self.last_value = self.dialCenter
+                self.isDialHot = False
+                #self.dialUI.setCursor(QCursor(Qt.ArrowCursor))
+        elif value == 1111: #Mouse enters Dial setup for fresh turn
+            #print('update_label: value = 1111 Mouse enters  Dial\n')
+            # dev print('Mouse entered dial')
+            if self.FlipFlagEnter  == False:
+                # devprint("isDialHot Flipping to True")
+                self.FlipFlagEnter = True
+                self.FlipFlagExit = False
+            self.steerLabel.setText(f"Value: {'Forward'}")
+            # dev self.steerLabel.setText(f"Value: {'Forward Going Hot '}")
+            self.dialUI.setValue(self.dialCenter)
+            self.last_value = self.dialCenter
+            self.isDialHot = True
+            self.dialUI.setCursor(QCursor(Qt.PointingHandCursor))
+        elif value == -1:
+            # dev print("Welcome.  We are idling")
+            print('update_label: value = -1 Waiting \n')
+            self.steerLabel.setText(f"Value: {'Ready'}")
+            # dev self.steerLabel.setText(f"Value: {'Waiting for Good-To-Go'}")
+            self.dialUI.setValue(self.dialCenter)
+            self.last_value = self.dialCenter
+            self.isDialHot = False
+            self.FlipFlagExit = True
+            self.FlipFlagEnter = False
+	        
+        else: 
+            if self.isDialHot == True:
+                # dev print('isDialHot is True')
+                print('update_label: value = ' +str(value) + ' ...Dial is hot \n')
+                self.steerLabel.setText(f"Value: {value}")
+                self.last_value = value
+            """
+             else:
+                self.dialUI.setValue(self.dialCenter)
+                self.last_value = self.dialCenter
+           """
+ 
+    @Slot(int)
+    #@Slot()
+    def dialHovers(self,tstValue):
+        #self.dialUI.sliderReleased()
+        print('Hover over Dial\n')
+        print('Hover over Dial\n')
+        #self.steerLabel.setText("Forward")
+        self.update_label(tstValue)
+        self.dialLastValue = self.dialCenter
+
+ 
+    @Slot(int)
+    #@Slot()
+    def dialActive(self,tstValue):
+        #self.dialUI.sliderReleased()
+        print('Dial Now  Active\n')
+        print('Dial Now Active\n')
+        self.update_label(tstValue)
+        self.steerLabel.setText("Forward")
+        self.dialLastValue = self.dialCenter
+
+    @Slot(int)
+    #@Slot()
+    def dialReleased(self,tstValue):
+        #self.dialUI.sliderReleased()
+        print('Dial Released\n')
+        print('Dial Now Released\n')
+        self.steerLabel.setText("Forward")
+        self.update_label(tstValue)
+        self.dialLastValue = self.dialCenter
+        ##  end from aap0035_997
+
+
+    @Slot()
+    def on_sliderAccel_valueChanged(self, value):
+        #print('anything!!!\n')
+        #if dialReleased() == True:
+        print('Speed: ' + str(value)+ ' kph\n')
+
+    @Slot()
+    def on_sliderFuel_valueChanged(self, value):
+        #print('anything!!!\n')
+        #dialReleased()
+        print('Speed: ' + str(value)+ ' kwh remaining\n')
+
+    @Slot()
+    def update(self):
+        #dialReleased()
+        self.steerHoldValue = self.dialUI.self.dial.value()
+        #App.Console.PrintMessage
+        print('Update::   ' + str(self.steerHoldValue) +'\n')
+
+
+
+
+    @Slot()
+    def on_button_clicked(self):
+        """
+        logic needs work 
+        """
+        print('Start/Stop Toggled\n')
+        #dialReleased()
+        if self.isRunning == True:
+            self.btnStarter.setText('Stop') 
+            self.started = True
+        else:
+            if self.hasEStopBnPushed == False:
+                self.btnStarter.setText('Start') 
+                self.started = False 
+        if self.hasEStopBnPushed == False:
+            print('hasEStopBnPushed == False\n')
+            if self.isRunning == True:             
+                #print
+                self.btnStarter.setText('Starter') #need to switch button text 
+                self.btnEStop_toggle_visibility(True)
+                print('hasEStopBnPushed == False and Stopping soon\n')
+                print('Stoping\n')
+                print('self.btnEStop_toggle_visibility(False)\n')
+
+                self.steerLabel.setText("X-out of window to terminate!")
+                self.isRunning = False
+                self.hasEStopBnPushed = False
+                self.timer.stop()
+                #self.dialUI.value() = self.dialCenter
+                #self.steerHoldValue = self.dialUI.self.dial.value()
+            else : #assumed self.isRunning == False:
+                print('hasEStopBnPushed == False and Starting\n') 
+                #print
+                self.btnEStop_toggle_visibility(True)
+                self.btnStarter.setText('Stop') 
+                print('Starting\n')
+                print('self.btnEStop_toggle_visibility(True)\n')
+                self.isRunning = True
+                self.hasEStopBnPushed = False
+                self.steerLabel.setText("Rotate  dial handle Port/Starboard to steer")
+                #self.timer.start(self.millisecond)
+                #self.dialUI.value() = self.dialCenter
+        else:
+	        #Assume hasEStopBnPushed == True
+            self.btnEStop_toggle_visibility(False)
+            if self.isRunning == True:
+                print('Emergency Stop.  Full Power-On Reset Required.\n')
+                self.steerLabel.setText("STOP!! Vehicle Not Drivable! Abandon Vehicle!")
+                self.isRunning = False
+                self.hasEStopBnPushed = True
+            else: #assumed hasEStopBnPushed == False
+                print('Emergency Stop is in effect.  Full Power-On Reset Required.\n')
+                self.steerLabel.setText("STOP!! Vehicle requires depot level support!")
+                self.isRunning = False
+                self.hasEStopBnPushed = True
+
+
+    def btnEStop_toggle_visibility(self,Good2Go):
+        #dialReleased()
+        """
+        logic needs work
+        print('reached btnEStop_toggle_visibility')
+        if Good2Go == False:
+            print('if Good2Go')
+            #self.isRunning = False
+            self.hasEStopBnPushed = True
+            self.btnEStop.setVisibility(False)
+            self.dial.setVisibility(False)
+            self.slider.setVisibility(False)
+            print('Emergency Stop is in effect.  Full Power-On Reset Required.\n')
+            self.steerLabel.setText("STOP!! Vehicle requires immediate user level support!")
+        else:
+            print('Failed to make Good2Go = True')
+            self.btnEStop.setVisibility(True)
+            self.dial.setVisibility(True)
+            self.slider.setVisibility(True)
+            self.hasEStopBnPushed = False
+            self.button.show()
+        """
+        pass
+
+    @Slot()
+    def on_dial_changed(self, value):
+        print('on_dial_changed\n')
+        if self.isRunning:
+            if value > self.dialLastValue:
+                self.steerLabel.setText("Starboard")
+                self.dialLastValue = value
+            elif value <  self.dialLastValue:
+                self.steerLabel.setText("Port")
+                self.dialLastValue = value 
+            if  47 <= value <53:
+                self.steerLabel.setText("Forward")
+                self.dialLastValue = value
+        else:    
+            self.steerLabel.setText('Click the Start/Stop')
+            self.steerLabel.setText("Forward")
+            self.dialLastValue = value
+
+
+if __name__ == '__main__':
+    #app = QApplication([])
+    dial = FooDial()
+    dial.show()
+    #app.exec_()

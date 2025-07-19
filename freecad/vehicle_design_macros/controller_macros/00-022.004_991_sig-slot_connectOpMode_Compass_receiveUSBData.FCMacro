@@ -1,0 +1,1082 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program is a spike for bringing simple QtDesign layout into the FreeCAD - Abbott
+#*    prototyping the invisioned Abiriba_RG  GM EV vehicle 
+#*    detailed at: https://abbottanp.com/artifacts/gm_vehicle_WB/index.html.
+#*Helpful Sites:
+'''
+1> See 250323_1103_examples_PySide for AI questions/inputs of valuein building program
+2> Specific source https://doc.qt.io/qtforpython-6/examples/example_gui_analogclock.html
+       as noted in copyright "The Qt Company Ltd with addaptations for usage on HehJay
+3> List of examples https://doc.qt.io/qtforpython-6/examples/example_qml_tutorials_extending-qml_chapter6-plugins.html
+4> GNU Radio https://wiki.gnuradio.org/index.php?title=Main_Page
+5> Google collection of guages: https://www.google.com/search?q=qt%20gauge%20widget&udm=2&sa=X&ved=0CC0QtI8BahcKEwi4y6ypw-6MAxUAAAAAHQAAAAAQFA&biw=1096&bih=675&dpr=1
+6> Others:
+    Progress Bar: https://doc.qt.io/qt-5/qml-qtquick-controls-progressbar.html
+    The electric vehicle digital dashboard: https://www.youtube.com/watch?v=j6BS3f9LM9I
+    Examples: https://qwt.sourceforge.io/controlscreenshots.html
+    Gauges: https://www.google.com/search?sca_esv=22ca403608f503d2&sxsrf=AHTn8zqnsGbbSZSL62NyfDk5CaPIcKbYCA:1745458471431&q=circular+gauge+qt+gauge+widget&uds=ABqPDvztZD_Nu18FR6tNPw2cK_RR9uegVYgQNm0A_FIwPHdCgl5EIbfU0vDhivG2URhPgQ6ziH9vp1fWif_4CVhN5cnXQpfMZs6nnc9En4Gyv9QgUDZ3GoDqmHpIfuX8XU-jvsmpHhKlsRyI_UnH8K6jKII8fiFnKjBxn_in83HLO5ji5ZnESMI&udm=2&sa=X&ved=2ahUKEwixs6PBw--MAxVJMlkFHS1aD8YQxKsJegUIhwEQAQ&ictx=0&biw=1096&bih=675&dpr=1
+7> Show markings  https://stackoverflow.com/questions/63698714/how-to-show-markings-on-qdial-in-pyqt5-python
+8> Slice steering like SquirrelChaser.  https://stackoverflow.com/questions/64639303/how-to-detect-qt-mouse-events-only-over-qpainted-objects
+
+Need to Add
+ setNotchesVisible(True) maks along outlin
+  setWrapping(False) halts continuous rotation.
+
+Version History
+250625_lu First definitative tie-in with USB bout lost that thread after brief play and force FC to death.
+
+250624_lu Same story.
+
+250623_lu Restart effort to tie AAP-controlPad to macro.
+
+250618_lu 1> Discovered the RadioButton group class not being banged.
+            ==>> pyside 2 QtWidget QRadioButton toggled() example for two itemscheck for value from a class to a base class using signals and slots
+            https://www.youtube.com/watch?v=N-PmjWip51k.  youtube starts slow but validates
+            aapClass: OpModeGroup(
+250610_lu 1> signal-slot for RadioButton group
+              ==>>pyside 2 QtWidget QRadioButton toggled() example for two itemscheck for value from a class to a base class using signals and slots
+              pyside 2 QtWidget QRadioButton toggled() example for two itemscheck for value from a class to a base class using signals and slots
+
+250609_lu 2> ==>> pyside 2 QtWidget QRadioButton toggled() example for two itemscheck 
+              for value from a class to a base class
+              https://www.google.com/search?client=ubuntu-sn&channel=fs&q=pyside+2+QtWidget+QRadioButton+toggled%28%29+example+for+two+itemscheck+fo+rvalue+from+a+class+to+a+base+class
+                 
+            1> Continue re-write dropping separate windows and putting radiobuttons on main 
+                control window for Compass and USBPad.
+250608_lu 1> Duplicated 0-022.003_996_987_* as 00-022.004_999_* and renamed
+            00-022.004_998 with minor renaming change to help locate/select
+            .004_998 will impleemnt a new layout such that a radiobox layout
+            will be used rather than the two windows and the associated 
+            window management.  See earlier dev_swarf for prior notes or at 
+            the bottom of this module.  Dropping "def setModeWindow(self):"
+
+'''
+
+import sys
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtWidgets import (QApplication, QStackedLayout, QComboBox, QWidget, QPushButton, QDial, QSlider, QVBoxLayout, QHBoxLayout, QLabel,QRadioButton, QDialog)
+from PySide2 import QtGui, QtCore
+from PySide2.QtGui import QFont, QColor
+from PySide2.QtCore import (Qt, Slot, QTimer)
+from PySide2.QtCore import Signal, QEvent
+from PySide2.QtGui import QCursor
+
+"""
+Comment these out to return behavior but drops the gauge-dial
+"""
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+"""  
+uses these elements
+from PySide2 import QtWidgets, QtCore
+from PySide2.QtWidgets import (QApplication, QWidget, QPushButton, QSpinBox, QDial, QSlider, QVBoxLayout, QHBoxLayout, QLabel)
+""" 
+""" for aapReadUSB_Port """
+##Thonny 
+from PySide2.QtSerialPort import QSerialPort, QSerialPortInfo
+from PySide2.QtCore import QIODevice
+#from PySide2.QtCore import QObject, Signal, pyqtSignal <<-- import issue
+from PySide2.QtCore import QObject, Signal, QTimer
+from threading import Thread
+from enum import Enum
+#import serial
+"""
+#==>> Python PySide2 What would a class look like for a serial read of the ttyUSB0 port
+#Google AI suggestion
+#https://www.google.com/search?client=ubuntu-sn&channel=fs&q=Python+PySide2+What+would+a+class+look+like+for+a+serial+read+of+the+ttyUSB0+port
+"""
+
+import FreeCAD as App
+import FreeCADGui as Gui
+#from aapLib import aapReadUSB_Port
+#from aapLib import aapNavDial, aap_CompasWidget, aapReadUSB_Port, aapPDB
+
+# aaPDB stuff
+from PySide2.QtCore import QObject
+import pdb
+
+"""
+hold for later use with a FCStd project file
+wrkPrjFile   = "_0_001_test"
+wrkShapeObj   = 'TBD'      #Let FreeCAD do the naminging work during building
+App.setActiveDocument(wrkPrjFile)
+App.ActiveDocument=App.getDocument(wrkPrjFile)
+Gui.ActiveDocument=Gui.getDocument(wrkPrjFile)
+Gui.getMainWindow()  # was showMainWindow
+"""
+
+
+
+# Application wide variable/flags etc
+aapUSB_Port = "/dev/ttyUSB0"
+
+devFlag = True
+
+
+class cntrlTristate(Enum):
+    COMPASS = 0
+    USBPAD = 1
+    XCARE = 2
+
+
+class aapPDBmgr(QObject):   ### SerialReader
+    def __init__(self,isAapPDBneeded):
+        super().__init__()
+        self.debug_on = isAapPDBneeded
+        if self.debug_on == True:
+            pdb.set_trace()
+            print("ln 122 In Debug mode")
+        else:
+            print("ln 124 Good to go as is")
+
+    def breakpoint():
+        pass
+
+## see https://doc.qt.io/qtforpython-5/PySide2/QtCore/QThread.html#PySide2.QtCore.PySide2.QtCore.QThread.run
+class aapReadUSB_Port(QObject):   ### SerialReader
+    data_received = QtCore.Signal(str)   # wasSignal(bytes)
+    progress = QtCore.Signal(int)  # Signal for progress
+    finished       = QtCore.Signal()     # Signal when task completes
+
+
+    #old def __init__(self, parent=None):
+        #super().__init__(parent)
+    def __init__(self, inport):
+        super().__init__()
+
+        self.port = inport
+        self.isTrafficOn = False
+        self.last_dataRead = 'tbd'
+        ####self.dataReadChanged.connect(self._emit_custom_signal)
+
+
+    def setupPort(self):
+        self.serial_port = QSerialPort()
+        #using "import serial" self.serial_port = serial
+        self.serial_port.port = self.port  #'/dev/ttyUSB0'
+        self.serial_port.baudrate = 9600
+        self.serial_port.read_mSec  = 200
+        self.serial_port.setPortName(self.serial_port.port)
+        self.serial_port.setBaudRate(QSerialPort.Baud9600)
+        self.serial_port.setDataBits(QSerialPort.Data8)
+        self.serial_port.setParity(QSerialPort.NoParity)
+        self.serial_port.setStopBits(QSerialPort.OneStop)
+
+
+
+
+    def startThreadPort(self):
+        self.isTrafficOn = True
+        self.thread = Thread(target=self.readPort, daemon=True)
+        self.thread.start()
+        print('ln 166 thread start completed')
+        self.run()
+
+    def run(self):
+        try:
+            self.setupPort()
+            rtnVal = self.openPort()
+            if rtnVal == 1: #open
+                rtnVal = 0
+                print('ln 175readAcrossThread ready to jump to readPort()')
+                rtnval = self.readPort()
+            if rtnVal == 9:
+                self.closePort()
+            if rtnVal == 0:
+                print('Ooops')
+        except Exception as e:
+            print(f"Serial error: {e}")
+         
+
+    def readPort(self):
+        termKnt = 0
+        i = 1
+        while self.isTrafficOn:
+            #print("test for serial_port Ready to Read")
+            if self.serial_port.waitForReadyRead(self.serial_port.read_mSec):  # Wait for data with a timeout of 1000ms
+                dataFromUSB = self.serial_port.readAll()
+                self.progress.emit(i)  # Send progress updates
+                #if devFlag: 
+                #    print("ln 296 Received:", dataFromUSB.data().decode(),'\n')
+                self.data_received.emit(dataFromUSB.data().decode()) # Emit the data
+                self.on_dataRead_changed(dataFromUSB.data().decode())
+                i += 1
+            else:
+                if devFlag:
+                    stopper = 100   #development quick wait
+                else:
+                    stopper = 1000 #production/release longer wait
+                
+                if termKnt > stopper:
+                    self.isTrafficOn = False
+                    print("Controller Off: emit Finished Signal")
+                    self.finished.emit()
+                else:
+                    termKnt += 1
+        return 9
+
+
+    def closePort(self):
+        self.isTrafficOn = False
+        self.serial_port.close()
+
+    def openPort(self):
+        rtnVal = 0
+        print('ln 219 If Port Opened => Read else bad => rtnVal_2 + halt')
+        if self.serial_port.open(QIODevice.ReadWrite):
+            print("ln 221 Port opened successfully")
+            self.isTrafficOn = True
+            self.serial_port.is_open = True
+            rtnAvl = 1
+            while self.isTrafficOn:
+                 self.readPort()   # halts when there is no input from controller
+        else:
+            print("ln 228 Failed to open port")
+            self.isTrafficOn = False
+            self.serial_port.is_open = False
+            self.termKnt = 0
+            rtnVal = 2
+
+
+    def on_dataRead_changed(self, value):
+        self.last_dataRead = value
+        #if devFlag: 
+        #    print("ln 340:: self.last_dataRead: ",value, "\n")
+
+   
+'''  
+cut for dev
+'''  
+class aapNavDial(QDial):
+    #valueChangedCustom = QtCore.Signal(int)
+    valueIsChanging = QtCore.Signal(int)
+    mouseHovers = QtCore.Signal(int)
+    mouseEnters = QtCore.Signal(int)  #aap Signal
+    mouseExits  = QtCore.Signal(int)  #aap Signal
+
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumSize(200, 200)  #originally from aap0035_003_002/4
+        self.setMinimum(0)
+        self.setMaximum(100)  
+        self.dialCenter = 0  # value of 50 points South
+        self.setGeometry(50, 50, 150, 150)
+        self.setValue(self.dialCenter) # Initial value
+        self.setNotchesVisible(True)
+        self.last_value = self.dialCenter
+        #self.valueChanged.connect(self._emit_custom_signal)
+        ## self.on_value_changed.connect(self._emit_custom_signal)
+        self.mouseHovers.connect(self.hoverEvent)
+        self.mouseEnters.connect(self.enterEvent)
+        self.mouseExits.connect(self.leaveEvent)
+        print('ln 408 Unkown reference begin aap0035_003_002 in aapNavDial \n')       
+
+    def paintEvent(self, event):
+        #print('paintEvent\n')       
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Background circle
+        painter.setBrush(QColor(50, 50, 50))
+        painter.drawEllipse(self.rect().center(), min(self.width(), self.height()) // 2 - 2, min(self.width(), self.height()) // 2 - 2)
+
+        # Needle
+        painter.setBrush(QColor(255, 0, 0))
+        angle = self.value() / (self.maximum() - self.minimum()) * 360  # Calculate angle
+        center = self.rect().center()
+
+        # Needle polygon
+        needle_length = min(self.width(), self.height()) // 2 - 10
+        p1 = QPoint(center.x(), center.y() - needle_length)
+        p2 = QPoint(center.x() + 5, center.y()+30)
+        p3 = QPoint(center.x() - 5, center.y()+30)
+
+        # Needle Knob
+        polygon = QPolygon([p1, p2, p3])
+        painter.translate(center)
+        painter.rotate(angle)
+        painter.translate(-center)
+        painter.drawConvexPolygon(polygon)
+        #painter.drawEllipse(self.rect().center(), 25, 25)
+        painter.drawEllipse(center.x()-12.5,center.y()+20, 25, 25)
+
+        # Center circle
+        painter.setBrush(QColor(255, 255, 255))
+        painter.drawEllipse(self.rect().center(), 5, 5)
+
+   ## end from aap0035_003_002
+        painter.end()
+
+    #def _emit_custom_signal(self, value):
+    #   print('ln 443 custom signal value change')
+    #    self.valueChangedCustom.emit(value)
+    #250531 redef self.valueIsChanging.emit(value)
+
+    def hoverEvent(self,event):
+        #print("Mouse hovering over dial")
+        self.setValue(self.last_value)
+        self.mouseHovers.emit(9999)
+        self.on_value_changed(9999)
+        #self._emit_custom_signal(9999)
+        self.isDialHot = True       
+
+    def enterEvent(self, event):
+         # Code to execute when the mouse leaves the dial
+        #print("Mouse entered the dial")
+        self.setValue(self.last_value)
+        self.mouseEnters.emit(1111)
+        self.on_value_changed(1111)
+        #self._emit_custom_signal(1111)
+        self.isDialHot = True        
+
+
+    def leaveEvent(self, event):
+         # Code to execute when the mouse leaves the dial
+        #print("Mouse left the dial")
+        self.setValue(self.last_value)
+        self.isDialHot = False
+        self.mouseExits.emit(1001)
+        self.on_value_changed(1001)
+        #self._emit_custom_signal(1001)
+
+    def on_value_changed(self, value):
+        self.last_value = value
+        #print('ln 477 signal on_value_change')
+        self.valueIsChanging.emit(value)
+        #original self.on_value_change.emit(value)
+        #self.on_value_change(value)
+
+        """
+        for __init()__
+        add         self.dialUI.valueChanged.connect(self.update_steerLabel)
+        """
+def create_btnEStop(steerLabel, callback):
+    button = QPushButton(steerLabel)
+    button.clicked.connect(callback)
+    button.setStyleSheet("background-color: red;")
+    #button.setStyleSheet("font-color: white;")
+    button.setGeometry(50, 50, 150, 150)
+    # Font and size
+    font = QFont("Arial", 34)
+    button.setFont(font)
+    # Color
+    button.setStyleSheet("QPushButton {color: white; background-color: red;}")
+    #button.setVisible(False)
+    return button
+
+
+
+def create_button(steerLabel, callback):
+    button = QPushButton(steerLabel)
+    button.clicked.connect(callback)
+    button.setCheckable(False)   #gm_vehicle off
+    button.setStyleSheet("""
+        QPushButton {
+            background-color: green; /* Default background color when unchecked vehicle off*/
+            color: yellow;
+        }
+        QPushButton:checked {
+            background-color: red; /* Background color when checked vehicle on */
+            color: white;
+        }
+    """)
+    print("ln 373 on_button created with callback\n")
+    breakpoint()
+    return button
+
+
+"""
+Hold for future possible use
+def create_dial(min_val, max_val, center_val, callback):
+    print('create aapNavDial\n')       
+    dial = aapNavDial()
+    dial.setMinimum(min_val)
+    dial.setMaximum(max_val)
+    dial.setValue(center_val)
+    dial.setNotchesVisible(True)
+    dial.lastvalue = center_val
+    dial.valueChanged.connect(callback)
+    dial.setTracking(True)   #insure value changes with corsor move
+    #dial.setVisible(False)
+    print('Returning to home plate\n')
+    return dial
+"""
+
+def create_Accel_Slider(min_val,max_val ,tickpos,callback):
+ #   slider = QSlider(min_val, max_val, tickpos)
+    slider = QSlider()
+    slider.setMinimum(min_val)
+    slider.setMaximum(max_val)
+    slider.setValue = 0
+    slider.TickPosition = 3
+    slider.valueChanged.connect(callback)
+    #slider.setVisible(False)
+    return slider
+
+def create_Fuel_Slider(min_val, max_val,callback):
+    slider = QSlider()
+    slider.setMinimum(0)
+    slider.setMaximum(100)
+    slider.TickPosition = 3
+    slider.setValue(100)
+    slider.valueChanged.connect(callback)
+    #slider.setVisible(False)
+    return slider
+    
+#Create OpMode Radio Button Group
+class OpModeGroup(QDialog):
+    modeIndex_changed = QtCore.Signal(int)
+    modeIsChanging = QtCore.Signal(int)
+    btnRadioToggleOn1 = QtCore.Signal(int)
+    btnRadioToggleOn2 = QtCore.Signal(int)  #aap Signal
+
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        print("ln 429 Radio Group Class reached for init\n")
+        self.btnRadioOpt1 = QRadioButton("Compass Needle Touch (Default)")
+        self.btnRadioOpt1.setChecked(True)
+        self.btnRadioOpt2 = QRadioButton("USB Control Pad")
+        #self.btnRadioOpt1.toggled.connect(self.update_selection)
+        #self.btnRadioOpt2.toggled.connect(self.update_selection)
+        self.opModeLayout = QVBoxLayout()
+        self.setLayout(self.opModeLayout)
+        self.opModeLayout.addWidget(self.btnRadioOpt1)
+        self.opModeLayout.addWidget(self.btnRadioOpt2)
+        #self.btnRadioOpt1.toggled.connect(lambda: self.on_radio_button_toggled(self.btnRadOpt1))
+        #self.btnRadioOpt2.toggled.connect(lambda: self.on_radio_button_toggled(self.btnRadOpt2))
+        print("ln 441 \n")
+        breakpoint()
+        self.btnRadioOpt1.toggled.connect(self.on_radio_button1_toggledEvent)
+        self.btnRadioOpt2.toggled.connect(self.on_radio_button2_toggledEvent)
+ 
+ 
+    def on_mode_changed(self, value):
+        self.last_value = value
+        #print('ln 477 signal on_value_change')
+        self.modeIsChanging.emit(value)
+        #original self.on_value_change.emit(value)
+        #self.on_value_change(value)
+        
+        
+    def on_radio_button1_toggledEvent(self, event):
+        # This method is called when a radio button is toggled
+        print(f"ln 452  Compass Event is setup")
+        self.selected_option = 1
+        self.btnRadioToggleOn1.emit(1101)
+        self.modeIsChanging.emit(1101)
+        self.isRadioBtn1_Hot = True
+        self.isRadioBtn2_Hot = False
+        
+    def on_radio_button2_toggledEvent(self, event):
+        # This method is called when a radio button is toggled
+        print(f"ln 461  USBPAD Event is setup")
+        self.selected_option = 2
+        self.btnRadioToggleOn2.emit(1102)
+        self.modeIsChanging.emit(1102)
+        self.isRadioBtn1_Hot = False
+        self.isRadioBtn2_Hot = True
+
+          
+    def get_requested_Mode(self):
+        # Method to retrieve the currently selected option
+        """  """
+        if self.btnRadOpt1.isChecked():
+            print("ln 473 btnRadOpt1 checked\n")
+            selOpt = 1 #self.btnRadOpt1.text()
+        elif self.btnRadOpt2.isChecked():
+            print("ln 433 btnRadOpt2 checked\n")
+            selOpt = 2 #self.btnRadOpt2.text()
+        else:
+            return None
+        """  """
+        return selOpt
+
+    
+
+class HehJayDashCntrl(QtWidgets.QDialog):
+ 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    #def __init__(self, parent=None):
+        #super(HehJayDashCntrl,self).__init__(parent)
+        ## 250624        
+        self.aapPDB = aapPDBmgr(False)  #turn-off pdb
+        ### 250624      self.aapPDB = aapPDBmgr(True)  #turn-on pdb
+        #force a known state: cntrlTristate.XCARE and set to COMPASS as default.
+        self.opMode = cntrlTristate.XCARE  
+        #250608 self.setMainWindow()
+        self.isDialHot = False
+        self.isOpModeActive = False  #select opMode radio button then press starter button
+        #invoked from setModeWindow()  self.setCntrlWindow()
+        self.serial_reader = None
+        self.setCntrlWindow()
+    """
+    def setModeWindow(self):
+        self.modeLabel = QLabel("Click to Select Op Mode to Reach Contrl Panel")
+        self.btnModeTOUCH = create_button("Touch/Mouse", self.btn4modeTOUCH_clicked)
+        self.btnModeUSBPAD = create_button("Control Pad", self.btn4modeUSBPAD_clicked)
+        #self.combo4mode = QComboBox()
+        #self.combo4mode.addItem("Touch Mouse", cntrlTristate.COMPASS)
+        #self.combo4mode.addItem("Control Pad", cntrlTristate.USBPAD)
+        #self.combo4mode.addItem("Don't Care", cntrlTristate.XCARE)
+        self.modelayout = QVBoxLayout(self)
+        self.modelayout.addWidget(self.modeLabel)
+        self.modelayout.addWidget(self.btnModeTOUCH)
+        self.modelayout.addWidget(self.btnModeUSBPAD)
+        #modelayout.addWidget(self.combo4mode)
+        #self.combo4mode.currentIndexChanged.connect(self.on_combo4mode_change)
+
+    def btn4modeTOUCH_clicked(self):
+        self.mode = cntrlTristate.COMPASS
+        print(f"ln 578 Selected Mode: Touch/Mouse on Compass")
+        #self.setModeWindow().close
+        self.switch_layout()
+        current_index = 0  #self.stacked_layout.currentIndex()
+        new_index = 1    #if current_index == 0 else 0 # Ternary operator
+        self.stacked_layout.setCurrentIndex(new_index)
+        self.setCntrlWindow()
+        
+    def btn4modeUSBPAD_clicked(self):
+        self.mode = cntrlTristate.USBPAD
+        print(f"ln 588 Selected Mode: Controler Pad")
+        #self.setModeWindow().close
+        current_index = 1 #self.stacked_layout.currentIndex()
+        new_index = 2    #1 if current_index == 0 else 0 # Ternary operator
+        self.switch_layout()
+        self.stacked_layout.setCurrentIndex(new_index)
+        self.setCntrlWindow()
+    
+
+    ''' 
+    #def on_combo4mode_change(self, index):
+    def on_btn4mode_change(self):
+        #selected_value = self.combo4mode.itemData(index, Qt.UserRole)
+        selected_value = self.mode
+        print(f"Selected Value: {selected_value.name} ({selected_value.value})")
+        self.setModeWindow().close
+        self.setCntrlWindow()
+    '''
+    """
+
+    def startUSBThread(self):
+        print(f"ln 537 Starting Controller USB Port{aapUSB_Port}\n")
+        self.usblabel.setText("Starting USB...")
+
+        self.serial_reader = aapReadUSB_Port(aapUSB_Port) # Replace with active serial port
+        #??? why 2 statements  ln 521 and ln 526
+        #self.serial_reader.startThreadPort()  # ln 521
+        self.serial_reader.data_received.connect(self.on_data_received)
+        self.serial_reader.data_received.connect(self.on_data_received) # Connect signal to base function call
+        self.serial_reader.finished.connect(self.task_finished)
+        self.serial_reader.progress.connect(self.update_progress)
+        self.serial_reader.startThreadPort()  # ln 526
+        self.serial_reader.closePort()
+
+
+    def setCntrlWindow(self):
+        # begin chop-out of block
+        #Create OpMode Radio Button Group
+        """
+        self.btnRadioOpt1 = QRadioButton("Compass Needle Touch (Default)")
+        self.btnRadioOpt1.setChecked(True)
+        self.btnRadioOpt2 = QRadioButton("USB Control Pad")
+        self.opModeLayout = QVBoxLayout()
+        self.opModeLayout.addWidget(self.btnRadioOpt1)
+        self.opModeLayout.addWidget(self.btnRadioOpt2)
+        """
+        self.steerLabel = QLabel("ln 539 Click Start Stop to Activate/Halt")
+        #self.steerDirLbl = QLabel("ln 646 All Head Forward")
+        self.accelLbl = QLabel("Speed: mph                               Capacity: KWHr")
+        self.btnStarter = create_button("Toggle to Start", self.on_button_clicked)  # Assumes starting with btn click for Compas or USBPAD
+        self.btnEStop   = create_btnEStop("Emergemcy\n Stop", self.on_button_clicked)
+        self.btnEStop.clicked.connect(self.btnEStop_toggle_visibility)
+        EStoplayout = QHBoxLayout()
+        EStoplayout.addStretch()  # Add stretch to push the button to the right
+        EStoplayout.addWidget(self.btnEStop, alignment=Qt.AlignRight | Qt.AlignBottom)
+        self.hasEStopBtnPushed = False
+        # 250624    self.isRunning = True   #beginning in run-ready stateFalse
+        ##250624 
+        self.isRunning = False  #start controller in known off state 
+        print("ln 552 self.mode: ", self.opMode)
+        if self.opMode == cntrlTristate.USBPAD:
+            print("ln 554 USBPAD Mode\n") 
+            #self.isDialHot = True 
+            self.isOpModeActive = False
+        elif self.opMode == cntrlTristate.COMPASS:
+            print("ln 558 COMPASS Mode\n") 
+            #self.isDialHot = True 
+            self.isOpModeActive = False
+        else: # must still be XCARE   force to COMPASS      
+            self.opMode = cntrlTristate.COMPASS
+            print("ln 562 Forced COMPASS Mode\n") 
+            print("ln 563 not allowed XCARE Mode\n") 
+            #self.isDialHot = True
+            self.isOpModeActive = False
+            
+
+
+        """
+         100 < 53....Port  <== 50....Forward  ==> Starboard....47  < 0
+        """
+        self.dialMin = 0
+        self.dialMax = 100
+        self.dialCenter = 50   #0   50
+        #self.dialMin = 100
+        #self.dialMax = 0
+        #self.dialCenter = 0   #50
+
+        self.dialLastValue =  self.dialCenter
+        self.dialActive = False  #dialUI is not active yet.  Mouse needs to hoover over
+        #Flags used ot turn messages on/off and control redundant messages
+        self.FlipFlagExit = True   #Begins as True: just exited
+        self.FlipFlagEnter = False
+        self.dialUI = aapNavDial()
+        #self.dialUI.valueChangedCustom.connect(self.update_label)
+        self.dialUI.mouseHovers.connect(self.dialHovers(9999))
+        #self.dialUI.mouseEnters.connect(self.dialActive(1111))
+        self.dialUI.mouseExits.connect(self.dialReleased(1001))
+        self.dialUI.valueChanged.connect(self.on_dial_changed)
+        self.dialUI.valueChanged.connect(self.update_label)
+        self.dialUI.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Allow dial to receive focus
+        # end dial aap0035-997
+        self.sliderAccel = create_Accel_Slider(0,100,3, self.on_sliderAccel_valueChanged)
+        self.sliderFuel =  create_Fuel_Slider(0,100, self.on_sliderFuel_valueChanged)
+        # end of block chop-out
+        self.radbtnOpModeGroup = OpModeGroup()
+        self.radbtnOpModeGroup.btnRadioToggleOn1.connect(self.radioBtnToggled(1101))
+        self.radbtnOpModeGroup.btnRadioToggleOn2.connect(self.radioBtnToggled(1102))
+        self.radbtnOpModeGroup.modeIsChanging.connect(self.update_label)
+        self.radbtnOpModeGroup.modeIsChanging.connect(self.on_button_clicked)
+        self.cntrl_layout = QVBoxLayout()      #Parent layout
+        self.cntrl_layout.addWidget(self.radbtnOpModeGroup)
+        self.cntrl_layout.addWidget(self.btnStarter)
+        self.cntrl_layout.addWidget(self.steerLabel)
+        #self.cntrl_layout.addWidget(self.steerDirLbl)
+        self.cntrl_layout.addWidget(self.accelLbl)
+        dashBoardLayout = QHBoxLayout()
+        dashBoardLayout.addWidget(self.sliderAccel)
+        dashBoardLayout.addWidget(self.dialUI)
+        dashBoardLayout.addWidget(self.sliderFuel)
+        #cntrl_layout.addWidget(self.dialUI)
+        #cntrl_layout.addWidget(self.sliderAccel)
+        #cntrl_layout.addWidget(self.sliderFuel)
+        self.cntrl_layout.addLayout(dashBoardLayout)
+        self.cntrl_layout.addWidget(self.btnEStop)
+        #self.btnStarter = QtWidgets.QPushButton("Start Controller Pad")
+        if self.opMode == cntrlTristate.COMPASS:
+            self.usblabel = QLabel("ln 611 Panel Active... Check Report View")
+        elif self.opMode == cntrlTristate.USBPAD:
+            self.usblabel = QLabel("ln 638 Await CntrlPad Data... Check Report View")
+            self.btnStarter.clicked.connect(self.startUSBThread)#250613
+        else:
+             self.usblabel = QLabel("ln 616 Awaiting Panel Inputs... Check Report View")
+       #cntrl_layout.addWidget(self.btnStarter)
+        self.cntrl_layout.addWidget(self.usblabel)
+        self.setLayout(self.cntrl_layout)
+        #250613  self.btnStarter.clicked.connect(self.startUSBThread)
+
+    @Slot(str)
+    def on_data_received(self, data):
+        #print(f"ln 421 Received data: {data.decode()}") # Decode to string if needed
+        #elf.usblabel.setText(f"ln 422 Received: {data.decode()}")
+        print(f"ln 626 Received data: ",data) # Decode to string if needed
+        self.usblabel.setText(f"ln 627 Received: ", data_received)
+
+    @Slot(int)
+    def update_progress(self, value):
+        """Update progress bar on progress signal."""
+        print(f"ln 632 Count if USB lines Read: {value}")
+        self.progress_bar.setValue(value)
+        self.usblabel.setText(f"line read: {value}")
+
+    @Slot()
+    def task_finished(self):
+        """Handle task completion."""
+        print("ln 639 Done with the eggs.")
+        self.btnStarter("Click to restart Pad!")
+        self.usblabel.setText("Please Sir, one more")
+        self.serial_reader = None  # Release reference
+
+    def set_dial_value(self, value):
+         self.dial.setValue(value)
+    """
+    def on_dial_changed(self, value):
+        #Reset to 50 when focus changes
+        print("ln 694 on_dial_changed")
+        if value != 50:
+            self.dial.setValue(50)
+    """
+
+    @Slot()
+    def update_label(self, value):
+        """
+        Allowed Values/States:
+        1001: mouse exits dial-box
+        1111: mouse enters dial-box
+        9999: mouse hovers over dial-box
+        -1:    Waiting
+        1:     Forward: 97 - 3 mouse steering generally forward
+        4:     Starboard mouse steering right
+        96:    Portt mouse steering to left
+        """
+        #print('update_label\n')
+        #250529_1624 
+        breakpoint()
+        print("ln 669  update_label showing  Dial value: " ,  str(value), '\n')
+        if value == 1001:  #Mouse exits  Dial
+            # dev print('Cursor not in Dial')
+            #print('update_label: value = 1001 Mouse exits  Dial\n')
+            if self.FlipFlagExit == False:
+                 # dev print("isDialHot Flipping to False")
+                 self.FlipFlagExit = True
+                 self.FlipFlagEnter = False
+            self.steerLabel.setText(f"ln 677 Value: {'Forward'}")
+            # dev self.steerLabel.setText(f"Value: {'Forward Now Going Cold 1001'}")
+            self.dialUI.setValue(self.dialCenter)
+            if self.isDialHot == True:
+                self.last_value = self.dialCenter
+                print("ln 682 self.last_value:", self.last_value, " ...self.dialLastValue", self.dialLastValue, "\n")
+                self.isDialHot = False
+                #self.dialUI.setCursor(QCursor(Qt.ArrowCursor))
+        elif value == 1111: #Mouse enters Dial setup for fresh turn
+            #print('update_label: value = 1111 Mouse enters  Dial\n')
+            # dev print('Mouse entered dial')
+            if self.FlipFlagEnter  == False:
+                # devprint("isDialHot Flipping to True")
+                self.FlipFlagEnter = True
+                self.FlipFlagExit = False
+            self.steerLabel.setText(f"ln 653 Value: {'Forward'}")
+            # dev self.steerLabel.setText(f"Value: {'Forward Going Hot '}")
+            self.dialUI.setValue(self.dialCenter)
+            self.last_value = self.dialCenter
+            self.isDialHot = True
+            self.dialUI.setCursor(QCursor(Qt.PointingHandCursor))
+        elif value == -1:
+            # dev print("Welcome.  We are idling")
+            print('ln 661 update_label: value = -1 Waiting \n')
+            self.steerLabel.setText(f"Value: {'Ready'}")
+            # dev self.steerLabel.setText(f"Value: {'Waiting for Good-To-Go'}")
+            self.dialUI.setValue(self.dialCenter)
+            print("ln 704 self.last_value:", self.last_value, " ...self.dialLastValue", self.dialLastAalue, "\n")
+            self.last_value = self.dialCenter  
+            self.dialUI.isDialHot = False
+            self.FlipFlagExit = True
+            self.FlipFlagEnter = False
+        elif value == 4:
+            breakpoint()
+            print("ln 711 Starboard\n")
+            self.steerLabel.setText("ln 712 Starboard")
+            self.usblabel.setText(f"ln 713 Value: {'Starboard'}")
+        elif value == 96:
+            breakpoint()
+            print("ln 716 Port\n")
+            self.steerLabel.setText("ln 717 Port\n")
+            self.usblabelabel.setText(f"ln 718 Value: {'Port'}")
+        else:   # forced to be 9999
+            if self.isDialHot == True:
+                # dev 
+                breakpoint()
+                print('ln 723   isDialHot equals True')
+                print('ln 724 update_label: value = ' +str(value) + ' ...Dial is hot \n')
+                print("ln 725 old value: ", value, "\n")
+                self.steerLabel.setText(f"ln 726 Value: {value}")
+                #is_BoundedBy(value,4,50)
+                print("ln 728 value: ", value, '\n')
+                if value == 4:  #steering to Starboard
+                    breakpoint()
+                    self.steerLabel.setText("ln 731 Starboard")
+                elif value == 96 :  #steering to Port
+                    breakpoint()
+                    self.steerLabel.setText("ln 734 Port")
+                else:
+                    breakpoint()
+                    self.steerLabel.setText("ln 698 Forward")
+                self.last_value = value
+                print("ln 739 self.last_value:", self.last_value, " ...self.dialLastValue", self.dialLastValue, "\n")
+                print("ln 740 new value: ", self.last_value, "\n")
+                
+            """
+             else:
+                self.dialUI.setValue(self.dialCenter)
+                self.last_value = self.dialCenter
+           """
+    @Slot(int)
+    def radioBtnToggled(self,tstValue):
+        print(f"ln 792 Radio Btn Toggled def {tstValue}\n")
+        print(f"ln 793 self.isOpModeActive {self.isOpModeActive}\n")
+        if tstValue == 1101 and self.isOpModeActive == False:
+            self.opMode = cntrlTristate.COMPASS
+            # wait for toggle of starter button self.isOpModeActive = True
+            print("ln 797 set to COMPASS  isOpModeActive\n")
+        elif tstValue == 1102 and self.isOpModeActive == False:
+            self.opMode = cntrlTristate.USBPAD
+            print("ln 800 set to USBPAD isOpModeActive\n")
+            # wait for toggle of starter button self.isOpModeActive = True
+
+    @Slot(int)
+    #@Slot()
+    def dialHovers(self,tstValue):
+        #self.dialUI.sliderReleased()
+        print('ln 752 Hover over Dial   tstValue:', str(tstValue),'\n')
+        #self.steerLabel.setText("Forward")
+        self.update_label(tstValue)
+        self.dialLastValue = self.dialCenter
+
+ 
+    @Slot(int)
+    #@Slot()
+    def dialActive(self,tstValue):
+        #self.dialUI.sliderReleased()
+        print('ln 762 Dial Now  Active\n')
+        self.update_label(tstValue)
+        self.steerLabel.setText("Forward")
+        self.dialLastValue = self.dialCenter
+
+    @Slot(int)
+    #@Slot()
+    def dialReleased(self,tstValue):
+        #self.dialUI.sliderReleased()
+        print('ln 771 Dial Released\n')
+        self.steerLabel.setText("Forward")
+        self.update_label(tstValue)
+        self.dialLastValue = self.dialCenter
+        ##  end from aap0035_997
+
+
+    @Slot()
+    def on_sliderAccel_valueChanged(self, value):
+        #print('anything!!!\n')
+        #if dialReleased() == True:
+        print('Speed: ' + str(value)+ ' kph\n')
+
+    @Slot()
+    def on_sliderFuel_valueChanged(self, value):
+        #print('anything!!!\n')
+        #dialReleased()
+        print('Battery: ' + str(value)+ ' kwh remaining\n')
+
+    @Slot()
+    def update(self):
+        #dialReleased()
+        self.steerHoldValue = self.dialUI.self.dial.value()
+        #App.Console.PrintMessage
+        print('Update::   ' + str(self.steerHoldValue) +'\n')
+
+
+    def run_radioOpModeSelected(self):
+            if self.radbtnOpModeGroup.get_requested_Mode() == 1:          
+                self.opMode = cntrlTristate.COMPASS
+                self.isRadioBtn1_Hot = True
+                self.isRadioBtn2_Hot = False
+                self.isOpModeActive = True #sarter button pushed 
+                print('ln 857 btnRadioOpt1.isChecked \n')
+            elif  self.radbtnOpModeGroup.get_requested_Mode() == 2: 
+                self.opMode = cntrlTristate.USBPAD
+                self.isOpModeActive = True
+                self.isRadioBtn1_Hot = False
+                self.isRadioBtn2_Hot = True
+                print('ln 863 btnRadioOpt2.isChecked  self.opMode changed \n')
+                self.btnStarter.setText('ln 864 Start Steering with USB Control Pad') 
+                breakpoint()
+                print("ln 866 Try starting USB thread\n")
+                self.startUSBThread(aapReadUSB_Port)  #250522 
+
+            else:
+                print('ln 870 Houston we have a problem\n')
+            print('ln 871   Start/Stop Toggled self.opMode: ', self.opMode,"\n")
+
+    def steerVehicle(self):
+            if self.opMode == self.radbtnOpModeGroup.self.btnRadioOpt2.setChecked(True): # radGpOpMode set to COMPASS Mode
+                self.opMode =  cntrlTristate.USBPAD
+                self.btnStarter.setText('ln 885 Start Steering with USB Control Pad') 
+                breakpoint()
+                print("ln 887 Try starting USB thread\n")
+                self.startUSBThread(aapReadUSB_Port)  #250522 
+            elif self.opMode == self.radbtnOpModeGroup.self.btnRadioOpt2.setChecked(False):  #radGpOpMode set to USBPAD Mode
+                self.opMode =  cntrlTristate.COMPASS
+                self.btnStarter.setText('ln 891 Start Steering with Compass/Touch') 
+                self.serial_reader = None
+            else:  #then  self.opMode == cntrlTristate.XCARE:
+                self.opMode =  cntrlTristate.COMPASS
+                self.btnStarter.setText('ln 895 Force Start Steering with Compass/Touch') 
+                self.serial_reader = None
+            print("ln 897  \n")
+            breakpoint()
+
+            if self.isRunning == True and self.opMode == cntrlTristate.COMPASS:             
+                #print
+                self.btnStarter.setText('Stop or Change Mode') #need to switch button text 
+                self.btnStarter.setStyleSheet("QPushButton {color: white; background-color: red;}")
+                self.btnEStop_toggle_visibility(True)
+                print('ln 896 self.opMode == cntrlTristate.COMPASS \n')
+                print('ln 897 Stopping\n')
+                print('ln 898 self.btnEStop_toggle_visibility(False)\n')
+
+                self.steerLabel.setText("ln 900 X-out of window to terminate!")
+                #self.isRunning = False
+                #self.hasEStopBtnPushed = False
+                #check why there is a timer   self.timer.stop()
+                #self.dialUI.value() = self.dialCenter
+                #self.steerHoldValue = self.dialUI.self.dial.value()
+                #250608 turn-off USBPad
+            elif self.isRunning == True and self.opMode == cntrlTristate.USBPAD: 
+                print("ln 908 going to start USB thread\n")
+                breakpoint()
+                self.startUSBThread()  #250522 
+                print("ln 911 USB should be running\n")
+                self.btnStarter.setText('ln 912 Click to Stop USB Controller') #need to switch button text 
+                self.btnEStop_toggle_visibility(True)
+                #print('hasEStopBtnPushed == False and Navigate with Control Pad\n')
+                print('ln 915 A waiting USB Stop signal\n')
+                #print('self.btnEStop_toggle_visibility(False)\n')
+                self.steerLabel.setText("ln 917 X-out of window to terminate!")
+                #self.isRunning = False
+                #self.hasEStopBtnPushed = False
+                #self.timer.stop()
+                #250608 turn-on USBPAD
+                print('ln 922 Start Serial Reader for USB\n')
+            else : #assumed self.isRunning == False:
+                print('ln 924 hasEStopBtnPushed == False and Starting\n') 
+                #print
+                self.btnEStop_toggle_visibility(True)
+                self.btnStarter.setText('ln 927 Label Reset to Stop') 
+                print('ln 928 Starting\n')
+                print('ln 929 self.btnEStop_toggle_visibility(True)\n')
+                self.isRunning = False
+                self.hasEStopBtnPushed = False
+                self.steerLabel.setText("ln 932 Rotate  dial handle Port/Starboard to steer")
+                #self.timer.start(self.millisecond)
+                #self.dialUI.value() = self.dialCenter
+                #250528 self.timer.stop()
+
+
+    @Slot()
+    def on_button_clicked(self):
+        """
+        logic needs work 
+        """
+        print("ln 837   ******** def on_button_clicked(self):   ********")
+        print('ln 838   Start/Stop Toggled self.opMode: ', self.opMode,"\n")
+        #dialReleased()
+        if self.isRunning == True:
+            print('ln 841 self.isRunning = True\n')
+            self.btnStarter.setText('Stop or Change Mode') 
+            self.btnStarter.setStyleSheet("QPushButton {color: white; background-color: red;}")
+            print("ln 862 test fir OpMode == 1\n")
+            breakpoint()
+            self.run_radioOpModeSelected()
+        else:
+            print("ln 852 self.isRunning= False\n")
+            if self.hasEStopBtnPushed == False:
+                self.btnStarter.setText('ln 892 Start') 
+                breakpoint()
+                self.run_radioOpModeSelected()
+        if self.hasEStopBtnPushed == False:
+            self.steerVehicle()
+
+        else:
+            #Assume hasEStopBtnPushed == True
+            self.btnEStop_toggle_visibility(False)
+            if self.isRunning == True:
+                print('ln 884 Emergency Stop.  Full Power-On Reset Required.\n')
+                self.steerLabel.setText("ln 930 STOP!! Vehicle Not Drivable! Abandon Vehicle!")
+                self.isRunning = False
+                self.hasEStopBtnPushed = True
+            else: #assumed hasEStopBtnPushed == False
+                print('ln 889 Emergency Stop is in effect.  Full Power-On Reset Required.\n')
+                self.steerLabel.setText("ln 890 STOP!! Vehicle requires depot level support!")
+                self.isRunning = False
+                self.hasEStopBtnPushed = True
+
+
+    def btnEStop_toggle_visibility(self,Good2Go):
+        #dialReleased()
+        """
+        logic needs work
+        print('reached btnEStop_toggle_visibility')
+        if Good2Go == False:
+            print('if Good2Go')
+            #self.isRunning = False
+            self.hasEStopBtnPushed = True
+            self.btnEStop.setVisibility(False)
+            self.dial.setVisibility(False)
+            self.slider.setVisibility(False)
+            print('Emergency Stop is in effect.  Full Power-On Reset Required.\n')
+            self.steerLabel.setText("STOP!! Vehicle requires immediate user level support!")
+        else:
+            print('Failed to make Good2Go = True')
+            self.btnEStop.setVisibility(True)
+            self.dial.setVisibility(True)
+            self.slider.setVisibility(True)
+            self.hasEStopBtnPushed = False
+            self.button.show()
+        """
+        pass
+ 
+    @Slot()
+    def on_dial_changed(self, value):
+        print('ln 921 steerlbl on dial change ==>> Label for Port, Starboard, Forward\n')
+        if self.isRunning:
+            print("ln 923 self.isRunning: True ")
+        else: 
+            print("ln 925 self.isRunning: False ")
+        if self.isRunning == True:  #already runnig and responding
+            checkSteerLblText = self.steerLabel.text()
+            print("ln 928:  steerLabel Text: ", checkSteerLblText,'\n')
+            print("ln 929 self.isRunning: True \n")
+            print("ln 930\ current dial value: ", str(value),"    self.dialLastValue: ", self.dialLastValue, "\n")
+            #if value > self.dialLastValue:
+            breakpoint()
+            if value < self.dialLastValue:
+                print("ln 934 jumped Port\n")
+                self.steerLabel.setText("ln 035 Port\n")
+                breakpoint() 
+                self.usblabel.setText("ln 937 Port\n")
+                #self.steerDirLbl.setText("ln 1019 Port")
+                breakpoint()
+                ## 1137 self.update_label(96)
+                self.dialLastValue = value
+            #elif value <  self.dialLastValue:
+            elif value > self.dialLastValue:
+                breakpoint()
+                print("ln 945 jumped Starboard\n")
+                self.steerLabel.setText("ln 946 Starboard\n")
+                breakpoint()
+                ## 1137 self.update_label(4)
+                breakpoint()
+                self.usblabel.setText("ln 950 Starboard\n")
+                #self.steerDirLbl.setText("ln 1028 Starboard")
+                self.dialLastValue = value 
+            else:
+                print("ln  Does the bus stop here\n")
+            #if  47 <= value <53:
+            print('ln 956 handle Forward 97 to 3\n')
+            if  97 <= value < 3:
+                breakpoint()
+                #self.steerLabel.setText("Forward")
+                print("ln 960 Forward  97 <--> 3")
+                self.usblabel.setText("ln 961 Forward  97 <--> 3")
+                #self.steerDirLbl.setText("ln 996 Forward  97 <--> 3")
+                breakpoint()
+                self.update_label(1)
+                self.dialLastValue = value
+            print("ln 902 Reached here")
+        else: # is not running ready to prep 
+            print("ln 916 skipped isRunning: True  Must not be running:  isRunning = False\n")    
+            self.steerLabel.setText('ln 917 Click the Start/Stop')
+            self.steerLabel.setText("ln 918 Forward")
+            self.dialLastValue = value
+            self.isRunning = True
+
+# In a FreeCAD macro or workbench
+if __name__ == '__main__':
+    dial = HehJayDashCntrl()
+    dial.exec_()
+
+

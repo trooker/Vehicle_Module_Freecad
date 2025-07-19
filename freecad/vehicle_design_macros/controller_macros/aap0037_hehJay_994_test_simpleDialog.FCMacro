@@ -1,0 +1,22 @@
+# -*- coding: utf-8 -*-
+#***************************************************************************
+#*                                                                               *
+#*   Copyright (c) 1989- 2025 Abbott Analytical Products   <http://abbottanp.com/>*
+#*                                                                               *
+#* This program parameterically #* Helpful references:
+
+"""
+250406_lu Launches the aap0037_test_994_simple_998.FCMacro
+"""
+
+from aap0037_test_994_simple_998 import createTask, TestDialog
+#from .TaskPanel import createTask
+
+
+def load():
+    createTask()
+    
+load()
+fireTest = TestDialog()
+fireTest.createTask()
+fireTest.show

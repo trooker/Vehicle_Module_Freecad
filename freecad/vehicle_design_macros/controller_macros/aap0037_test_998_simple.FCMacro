@@ -1,0 +1,84 @@
+'''
+Open a window, reading its layout from *.ui file
+
+250404_lu See 250402 gaugeClock-slider_btns
+    =>> FreeCAD how to receive signals from QtDesigner *.ui file sender at the receiver slot
+https://www.google.com/search?client=ubuntu-sn&channel=fs&q=FreeCAD+how+to+receive+signals+from+QtDesigner+*.ui+file+sender+at+the+receiver+slot
+'''
+
+import os
+import sys
+
+import FreeCAD,FreeCADGui,Part
+from PySide import QtGui, QtCore
+from PySide2.QtWidgets import (QApplication, QWidget, QPushButton, QDial, QSlider, QVBoxLayout, QHBoxLayout, QLabel)
+from PySide2.QtGui import QFont, QColor
+from PySide2.QtCore import (Qt, Slot, QTimer)
+from PySide2.QtUiTools import QUiLoader  ## <<<=== Lookup doc for tools
+#does not apply for QUiLoader.load  from PySide2.QtCore import QFile, QIODevice, QTextStream
+
+#from PySide import  uic
+
+#like aap0035_test_001_popUI and aap0037_test996
+#must be in same folder as Macro
+#works but need resources/ui 
+#print("Path to file.ui " + os.path.dirname(__file__) + '\n')
+#path_to_ui = os.path.dirname(__file__) + "/resources/ui/aap0037_hehJayAccRejCheckBx.ui"
+#print(path_to_ui + '\n')
+#as a Qt Designer text file or pyuic5 convert to 
+path_to_ui = os.path.dirname(__file__) #+ "/resources/ui/aap0037_hehJayAccRejCheckBx.ui"
+print(path_to_ui + '\n')
+#path_to_ui = os.path.dirname(__file__) + "/resources/aap0035_hehJayVehicle.qrc_rc.py"
+
+class Ui_MainWindow(object):
+    def __init__(self):
+        super().__init__()
+        #example
+        #self.ui_path = os.path.join(os.path.dirname(__file__), "my_ui.ui")
+        self.ui_path = os.path.join(path_to_ui, "/resources/ui/aap0037_hehJayAccRejCheckBx.py")
+        self.ui = QUiLoader.load(self.ui_path, self)
+
+        # Connect the signal to the slot
+        QtCore.Qt.connect(self.ui.DynoChartTaskPanel_Bx, "accept()", self, "accept")
+	    
+	
+    def setupUi(self, MainWindow):
+        self.centralWidget = FreeCADGui.PySideUic.loadUi(path_to_ui)
+        MainWindow.setCentralWidget(self.centralWidget)
+
+    @Slot()
+    def reject(self):
+        print('Update::    just happ reject\n')	    
+ 
+    @Slot()
+    def accept(self):
+        print('Update::    just happy accept\n')
+         	    
+
+  
+    
+    @Slot()
+    def update(self):
+         #self.steerHoldValue = self.dialUI.self.dial.value()
+         #App.Console.PrintMessage
+         print('Update::   ' + str(50) +'\n')
+
+
+    @Slot()
+    def on_sliderAccel_valueChanged(self, value):
+        #print('anything!!!\n')
+        print('Speed: ' + str(value)+ ' kph\n')
+
+    @Slot()
+    def on_sliderFuel_valueChanged(self, value):
+        #print('anything!!!\n')
+        print('Speed: ' + str(value)+ ' kwh remaining\n')
+
+
+
+
+
+MainWindow = QtGui.QMainWindow()
+ui = Ui_MainWindow()
+ui.setupUi(MainWindow)
+MainWindow.show()

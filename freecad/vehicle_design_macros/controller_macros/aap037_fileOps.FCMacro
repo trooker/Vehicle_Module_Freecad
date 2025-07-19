@@ -1,0 +1,30 @@
+"""
+250405_lu example of PySide2.QtCore.QIODevice
+https://www.google.com/search?client=ubuntu-sn&channel=fs&q=example+of+PySide2.QtCore.QIODevice
+
+"""
+
+
+import sys
+from PySide2.QtCore import QFile, QIODevice, QTextStream
+
+
+def process_file(file_path):
+    """Reads a text file line by line and prints each line."""
+    file = QFile(file_path)
+    if not file.open(QIODevice.ReadOnly | QIODevice.Text):
+        print(f"Could not open file: {file_path}")
+        return
+
+    input_stream = QTextStream(file)
+    while not input_stream.atEnd():
+        line = input_stream.readLine()
+        print(line)
+
+    file.close()
+
+#process_file("aap037_fileOps.FCMacro")
+#process_file("./resources/ui/aap0037_hehJayAccRejCheckBx.ui")
+#process_file("~/.local/share/FreeCAD/Macro/resources/ui/aap0037_hehJayAccRejCheckBx.ui")
+#works 250405_2123
+process_file("/home/tom/.local/share/FreeCAD/Macro/resources/ui/aap0037_hehJayAccRejCheckBx.ui")

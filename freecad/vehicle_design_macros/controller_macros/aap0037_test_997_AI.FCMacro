@@ -1,0 +1,24 @@
+'''
+Open a window, reading its layout from *.ui file
+
+250404_lu See 250402 gaugeClock-slider_btns
+    =>> FreeCAD how to receive signals from QtDesigner *.ui file sender at the receiver slot
+https://www.google.com/search?client=ubuntu-sn&channel=fs&q=FreeCAD+how+to+receive+signals+from+QtDesigner+*.ui+file+sender+at+the+receiver+slot
+'''
+import FreeCAD, FreeCADGui, Draft
+from PySide2 import QtCore, QtGui, QtWidgets, QtUiTools
+import os
+
+
+
+class MyUI(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui_path = os.path.join(os.path.dirname(__file__), "my_ui.ui")
+        self.ui = QtUiTools.loadUi(self.ui_path, self)
+
+        # Connect the signal to the slot
+        QtCore.Qt.connect(self.ui.my_button, "clicked()", self, "my_slot")
+
+    def my_slot(self):
+        print("Signal received!")

@@ -1,0 +1,25 @@
+'''
+==>> python where is aiohttp
+
+great answer for Http request
+https://www.geeksforgeeks.org/install-aiohttp-in-python/
+
+'''
+
+import aiohttp
+import asyncio
+
+async def fetch(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.text()
+          
+async def main():
+    #url = 'https://jsonplaceholder.typicode.com/posts/1' 
+    url = 'https://abbottanp.com/'
+    response_text = await fetch(url)
+    print(response_text)
+    
+#if __name__ == &quot;__main__&quot;:
+if __name__ == "__main__":
+    asyncio.run(main())
