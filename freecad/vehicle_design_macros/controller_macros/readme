@@ -1,1 +1,9 @@
-Place holder
+
+
+These are Macros related to the HehJay II vehicle controller which links the steering and acceleration/deceleration needs of the driver to thru USB/CAN to the physical movement of vehicle components.  The vehicle controller also 
+provides the driver with vehicle status such as speed and battery capacity. 
+
+As of the Project Deferral date, June 30, 2025, the Vehicle controller was functional but had not been linked to 
+the HehJay II suspension, acceleration, breaking, or battery management for simulation or physical movement. As resources become available physical models will be employed to verify design behavior.
+
+The Project deferral prevented creation of specific FreeCAD Tools-Macro for usage within the gm_vehicle workbench.  As such to use one of these Macro they must be installed in the user's FreeCAD.Macros folder and accessed a FreeCAD instance from the Toolbar.Macro panel.
