@@ -16,7 +16,7 @@ A FreeCAD Workbench supporting the creation of virtual and real ground mobile ve
 ![Vehicle Workbench Logo](freecad/gm_vehicle/resources/icons/VehicleWorkbench.svg)
 
 # Vehcile Design Macros
-A collection of FreeCAD macros used to support the GM Vehicle Workbench.  At this time the must be manually 
+A collection of FreeCAD macros used to support the GM Vehicle Workbench.  At this time the GM_Vehicle Macro must be manually 
 downloaded and installed from the Vehicle_Module_FreeCAD repository.  See the Vehicle_Design_Macro folder README for further details.
 
 
