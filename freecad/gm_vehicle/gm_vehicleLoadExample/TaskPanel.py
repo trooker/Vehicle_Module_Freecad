@@ -1,8 +1,10 @@
 #***************************************************************************
 #*  
-#*   Copyright (c) 2023 Abbottanp Analytical Products <luzzo@abbottanp.com>   *
+#*   Copyright (c) 2023, 2026 Abbottanp Avant Products <luzzo@abbottanp.com>   *
 #*                                                                       *
 #*   Used general Ship flow for TaskPanel.py substituting gm_vehicle content     *
+#*
+#*   This py script links the GUI panel list items with files containing their FCStd artifacts
 #*
 #*   Copyright (c) 2011, 2016 Jose Luis Cercos Pita <jlcercos@gmail.com>   *
 #*                                                                         *
@@ -48,8 +50,8 @@ class TaskPanel:
             App.open(path + "057_004_999_998_hogJackson_AWD.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 3):   # Tabby
             App.open(path + "022_998_2seat_tabbyChassis.FCStd")
-        elif(self.form.gm_vehicle.currentIndex() == 4):   # Tabby
-            App.open(path + "000_999_quickstart.FCStd")
+        elif(self.form.gm_vehicle.currentIndex() == 4):   # HehJayII Uploaded to GitHub
+            App.open(path + "057_aap_994_gm_vehicle_HehJayII.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 5):   # Tabby
             App.open(path + "000_998_quickstart.FCStd")
         elif(self.form.gm_vehicle.currentIndex() == 6):   # Tabby
